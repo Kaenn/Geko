@@ -4,6 +4,12 @@
  * 
  * @author : Kaenn
  */
+var elasticsearch = require('elasticsearch');
+
+var clientElasticsearch = new elasticsearch.Client({
+  host: 'localhost:9200'
+});
+
 var allCoherences=[];
 
 var coherencesName=['test'];
@@ -13,17 +19,74 @@ coherencesName.forEach(function(name){
 });
 
 function refreshNbCoherence(clients,coherence,outil,target){
-	clients.emit("refresh-nb-incoherence",coherence,outil,target,allCoherences[coherence].refreshNbCoherence(coherence,outil,target));
+	clientElasticsearch.search({
+		index: 'coherence_'+coherence,
+		type: 'data',
+		body: {
+			"fields" : ["id"],
+			"query" : allCoherences[coherence].getQueryElasticSearch()
+		}
+	}).then(function (body) {
+		clients.emit("refresh-nb-incoherence",coherence,outil,target,body.hits.total);
+	}, function (error) {
+		clients.emit("refresh-nb-incoherence",coherence,outil,target,"error");
+	});
 }
 
 function getAllIncoherence(client,coherence,outil,target){
-	client.emit("get-all-incoherence",coherence,allCoherences[coherence].listeCoherence(coherence,outil,target,false,[]));
+	clientElasticsearch.search({
+		index: 'coherence_'+coherence,
+		type: 'data',
+		body: {
+			"fields": ["id", "label"],
+			"query": allCoherences[coherence].getQueryElasticSearch()
+		}
+	}).then(function (body) {
+		client.emit("get-all-incoherence",coherence,outil,target,body.hits.hits.map(function(hit) {
+			  return { "id" : hit.fields.id.shift(), "label" : hit.fields.label.shift() };
+		}));
+	}, function (error) {
+		client.emit("get-all-incoherence",coherence,outil,target,"error");
+	});
+	
+	//client.emit("get-all-incoherence",coherence,allCoherences[coherence].listeCoherence(coherence,outil,target,false,[]));
 }
 
 function getNextCoherence(client,coherence,outil,target,blacklist){
-	client.emit("get-next-incoherence",coherence,allCoherences[coherence].listeCoherence(coherence,outil,target,true,blacklist));
+	console.log(blacklist);
+	clientElasticsearch.search({
+		index: 'coherence_'+coherence,
+		type: 'data',
+		body: {
+			"fields": ["id", "label"],
+			"query": allCoherences[coherence].getQueryElasticSearch(),
+			"size": 1,
+			"filter" : {
+				"not" : {
+	            	"terms" : { "id" : blacklist}
+				}
+	        }
+		}
+	}).then(function (body) {
+		var id=null;
+		var label=null;
+		var input=allCoherences[coherence].getInput();
+		var proposition=allCoherences[coherence].getProposition();
+		
+		if(body.hits.hits.length > 0){
+			var incoherence=body.hits.hits.shift().fields;
+			if("id" in incoherence)
+				id=incoherence.id.shift();
+			if("label" in incoherence)
+				label=incoherence.label.shift();
+		}
+		console.log(coherence,id,label,input,proposition);
+		client.emit("get-next-incoherence",coherence,id,label,input,proposition);
+	}, function (error) {
+		client.emit("get-next-incoherence",coherence,null,null,null,null);
+	});
+	//client.emit("get-next-incoherence",coherence,allCoherences[coherence].listeCoherence(coherence,outil,target,true,blacklist));
 }
-
 
 /**
  * Initialise la page du client et ses events

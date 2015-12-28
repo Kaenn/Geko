@@ -10,6 +10,7 @@ var session = require('express-session');
 var ldap = require('./modules/ldap');
 var coherenceManager = require('./modules/coherenceManager');
 
+
 // Recuperation de la variable de config
 var config = require('./config/config');
 

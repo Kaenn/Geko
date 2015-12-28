@@ -25,5 +25,23 @@ function listeCoherence(coherence,outil,target,justOne,blacklist){
 	return allIncoherence;
 }
 
+
+function getQueryElasticSearch(){
+	return {
+		"term" : { "isIncoherence" : true }
+	};
+}
+
+function getInput(){
+	return ["input1","input2","input3","input4"];
+}
+
+function getProposition(){
+	return { "value" : "input3" };
+}
+
 exports.refreshNbCoherence = refreshNbCoherence;
 exports.listeCoherence = listeCoherence;
+exports.getQueryElasticSearch = getQueryElasticSearch;
+exports.getInput = getInput;
+exports.getProposition = getProposition;

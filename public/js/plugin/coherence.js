@@ -57,6 +57,14 @@
 			return that;
 		};
 		
+		var addListener=function(){
+			that.coherence.socket.on('get-next-incoherence',function(coherenceName,id,label,input,proposition){
+				// On ne prend en compte l'evenement que si on sur cette coherence
+				if(coherenceName==that.parametres.coherenceClass.coherence)
+					instancierCoherence(id,label,input,proposition)
+			});
+		}
+		
 		var printStart=function(){
 			that.empty();
 			
@@ -73,6 +81,8 @@
 		
 		var printCoherence=function(elem){
 			that.empty();
+			
+			addListener();
 			
 			that._error=$("<div>",{"class" : "alert alert-danger"});
 			that._spinner=$("<span>",{"class":"glyphicon glyphicon-refresh glyphicon-refresh-animate"});
@@ -105,43 +115,44 @@
 			    that._buttons
 			]);
 			
-			instancierCoherence();
+			loadCoherence();
 			
 			return that;
 		}
 		
-		var instancierCoherence=function(){
+		var instancierCoherence=function(elemId,elem,input,proposition){
+			if(elemId==null){
+				setStatus('end');
+			}else{
+				that.element=elem;
+				that.elementId=elemId;
+				var coherenceName=that.coherence.coherence;
+				var answer=that.coherence.getAnswer(that.element);
+				that.inputPlugin=that.coherence.pluginInput;
+				// Vider l'ancienne coherence
+				that._coherenceForm.empty();
+
+				// On instancie l'inputPlugin
+				that._coherenceForm.append($("<div>")[that.inputPlugin]({
+					coherence : coherenceName,
+					data : input,
+					answer : answer,
+					proposition : proposition
+				}));
+				
+				setStatus("work");
+			}
+		}
+		
+		var loadCoherence=function(){
 			setStatus("wait");
 			
 			// Ajout d'un timeout pour afficher le wait (sinon blqouer par les requetes ajax)
 			setTimeout(function(){
 				that.element=null;
 				that.elementId=null;
-				// Vider l'ancienne coherence
-				that._coherenceForm.empty();
 				
-				that.coherence.getNext(that.blacklist,function(elem,elemId,proposition){
-					if(elem==null){
-						setStatus('end');
-					}else{
-						that.element=elem;
-						that.elementId=elemId;
-						var coherenceName=that.coherence.coherence;
-						that.coherence.getAllResponses(function(responses){
-							var answer=that.coherence.getAnswer();
-							that.inputPlugin=that.coherence.pluginInput;
-							// on instancie l'inputPlugin
-							that._coherenceForm[that.inputPlugin]({
-								coherence : coherenceName,
-								data : responses,
-								answer : answer,
-								proposition : proposition
-							});
-							
-							setStatus("work");
-						});
-					}
-				});
+				that.coherence.getNext(that.blacklist);
 				
 			},100);
 			
@@ -208,23 +219,7 @@
 		}
 		
 		var next=function(){
-			that.coherence.getNext(that.blacklist,function(elem,elemId,prosition){
-				if(elem==null){
-					setStatus('end');
-				}else{
-					that.element=elem;
-					that.elementId=elemId;
-					
-					var coherenceName=that.coherence.coherence;
-					that.coherence.getAllResponses(function(responses){
-						var answer=that.coherence.getAnswer();
-						
-						that._coherenceForm.trigger("reload",[coherenceName,responses,answer,prosition]);
-						 
-						setStatus("work");
-					});
-				}
-			});
+			that.coherence.getNext(that.blacklist);
 			
 			return that;
 		}

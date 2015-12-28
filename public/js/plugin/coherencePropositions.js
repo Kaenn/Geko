@@ -58,7 +58,7 @@
 		};
 		
 		var addListener=function(){
-			that.parametres.coherenceClass.socket.on('get-all-incoherence',function(coherenceName,allIncoherence){
+			that.parametres.coherenceClass.socket.on('get-all-incoherence',function(coherenceName,outil,target,allIncoherence){
 				// On ne prend en compte l'evenement que si on sur cette coherence
 				if(coherenceName==that.parametres.coherenceClass.coherence)
 					loadListePropositions(allIncoherence);
@@ -86,6 +86,7 @@
 		var loadListePropositions=function(incoherences){
 			var incoherencesByProposition={};
 			var incoherencesUnknown=[];
+			
 			$.each(incoherences, function(index,incoherence){
 				if("elem" in incoherence){
 					var proposition="Inconnu";
@@ -99,7 +100,7 @@
 							incoherencesByProposition[proposition.value]["incoherences"]=[];
 						}
 						
-						incoherencesByProposition[proposition.value]["incoherences"].push({"name" : incoherence.elem, "id" : incoherence.elemId});
+						incoherencesByProposition[proposition.value]["incoherences"].push({"name" : incoherence.label, "id" : incoherence.id});
 					}else{
 						incoherencesUnknown.push({"name" : incoherence.elem, "id" : incoherence.elemId});
 					}
