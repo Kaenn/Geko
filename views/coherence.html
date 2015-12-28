@@ -1,0 +1,52 @@
+{% extends 'layout.html' %}
+
+{% block head %}
+	<script src="/socket.io/socket.io.js"></script>
+
+	<link rel="stylesheet" href="/css/index.css" type="text/css" />
+
+	<script type="text/javascript" src="/js/bootstrap-3-typeahead.js"></script>
+	<script type="text/javascript" src="/js/plugin/form/OneInputForm.js"></script>
+	<script type="text/javascript" src="/js/plugin/form/SelectForm.js"></script>
+	<script type="text/javascript" src="/js/plugin/form/RadioForm.js"></script>
+	<script type="text/javascript" src="/js/plugin/coherence/CoherenceUtile.js"></script>
+	<script type="text/javascript" src="/js/plugin/coherenceContener.js"></script>
+	<script type="text/javascript" src="/js/plugin/coherence.js"></script>
+	<script type="text/javascript" src="/js/plugin/coherencePropositions.js"></script>
+	<script type="text/javascript" src="/js/plugin/coherenceResolutions.js"></script>
+	<script type="text/javascript" src="/js/plugin/modalResolutions.js"></script>
+{% endblock %}
+
+{% block siteName %}Geko{% endblock %}
+
+{% block onglet %}coherence{% endblock %}
+{% block title %}Geko - cohérence{% endblock %}
+
+{% block content %}
+	<script>
+		$(function() {
+			var socket = io.connect('{{ server }}');
+			
+			socket.emit("loadOngletListener","coherence");
+			
+			$("#contener").coherenceContener({
+				"content" : {
+			    	"test" : {
+				        "outil" : "default",
+				        "target" : "all",
+				        "label" : "Teste coherence",
+				        "inputName" : "input_name",
+				        "answer" : "Quel est le ? de l'élement {{element}}?",
+				        "pluginInput" : "OneInputForm" ,
+				        "plugins" : [
+							"propositions",
+							"resolutionsMultiple"
+						]
+			        }
+				},
+			    "socket" : socket
+		    });
+		});
+	</script>
+	<div id="contener"></div>
+{% endblock %}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Geko - Gestionnaire de cohérence</title>
+            
+        <!-- Bootstrap core CSS -->
+        <link href="/css/bootstrap-3.3.2/css/bootstrap.min.css" rel="stylesheet">
+
+
+		<script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script>
+		<script src="/css/bootstrap-3.3.2/js/bootstrap.min.js"></script>
+		
+		<script type="text/javascript" src="/js/login.js"></script>
+		
+		<style>
+			html {
+			  position: relative;
+			  min-height: 100%;
+			}
+			body {
+			  /* Margin bottom by footer height */
+			  margin-bottom: 101px;
+			  background-color : white;
+			}
+			
+			.page-footer {
+			  position: absolute;
+			  bottom: 0px;
+			  width: 100%;
+			  /* Set the fixed height of the footer here */
+			  height: 60px;
+			  background-color: #f5f5f5;
+			  
+			  padding-top: 40px;
+			  padding-bottom: 60px;
+			  color: #767676;
+			  text-align: center;
+			  border-top: 1px solid #e5e5e5;
+			}
+			
+			
+			body > .container {
+			  padding: 80px 15px 0;
+			}
+			.container .text-muted {
+			  margin: 20px 0;
+			}
+			
+			.footer > .container {
+			  padding-right: 15px;
+			  padding-left: 15px;
+			}
+			
+			#copyright{
+				font-size : 10px;	
+			}
+		
+			#login-span,#password-span,#button-connect{
+				min-width : 130px;
+			}			
+		</style>
+	</head>	
+	<body>
+		<div class="container">
+			<form method="post" action="/login">
+				<div class="container">
+					<div class="page-header">
+						<h1>Connexion au Gestionnaire de cohérence</h1>
+					</div>
+				
+					{% if error %}<div id="alert-connect" class="row alert alert-danger" role="alert">{{ error }}</div>{% endif %}
+					<div class="row" style="margin-bottom : 5px;">
+						<div class="col-md-5">
+					        <div class="input-group">
+			  					<span class="input-group-addon" id="login-span">Login OPS</span>
+					        	<input type="text" class="form-control" name="login" id="login" placeholder="login" aria-describedby="login-span" value="{{ login }}">
+					        </div>
+				        </div>
+					</div>
+				    <div class="row">
+				       	<div class="col-md-5">
+				        	<div class="input-group">
+			  					<span class="input-group-addon" id="password-span">Mot de passe</span>
+				        		<input type="password" class="form-control" name="pass" id="pass" placeholder="Votre mot de passe..." aria-describedby="password-span">
+				        	</div>
+				        </div>	
+					</div>
+					<br>
+					<div class="row">
+						<div class="col-md-2">
+				        	<button type="button" class="btn btn-danger" id="button-connect">Connexion</button>
+				        </div>
+					</div>
+				</div>
+			</form>
+		</div>	
+		<footer class="page-footer" role="contentinfo">
+	  		<div class="container">
+	  			Geko - Gestionnaire de cohérence - Version {{ version }} <span id="copyright">© 2015 Claranet. Tous droits réservés.</span>
+			</div>
+		</footer>
+	</body>
+</html>

@@ -1,0 +1,132 @@
+html{
+	overflow : hidden;
+}
+
+#contener{
+	padding-top : 51px;
+}
+
+.menu-badge{
+	margin-right : 15px;
+}
+
+#navbar{
+	margin-bottom : 0px;
+	-webkit-border-radius: 0 !important;
+       -moz-border-radius: 0 !important;
+			border-radius: 0 !important;
+}
+
+#navbar .navbar-brand{
+	color : white;
+}
+
+/* make sidebar nav vertical */ 
+@media (min-width: 1200px) {
+	.sidebar-nav .navbar .navbar-collapse {
+   		padding: 0;
+   		max-height: none;
+ 	}
+ 	.sidebar-nav .navbar ul {
+   		float: none;
+ 	}
+ 	.sidebar-nav .navbar ul:not {
+   		display: block;
+ 	}
+ 	.sidebar-nav .navbar li {
+   		float: none;
+   		display: block;
+ 	}
+ 	.sidebar-nav .navbar li a {
+   		padding-top: 12px;
+   		padding-bottom: 12px;
+ 	}
+ 	
+ 	
+ 	html,
+	html body,
+	html body .theContener,
+	html body .theContener #menu,
+	html body .theContener #menu .sidebar-nav,
+	html body .theContener #menu .sidebar-nav .navbar{
+		height : 100%;
+	}
+	
+	
+	html body .theContener #menu .sidebar-nav .navbar{
+		border-radius : 0;
+		margin : 0;
+	}
+	
+	html body .theContener #menu{
+		padding-right : 0;
+	}
+	
+	
+	
+	html body .theContener #menu .sidebar-nav .navbar ul.navbar-nav li a{
+		padding-left : 30px;
+	}
+}
+
+.sidebar-nav .navbar li:hover {
+	background-color : rgba(0,0,0,0.1);
+}
+
+
+.coherenceContent > div{
+	padding : 15px 30px 0px 15px;
+}
+
+.coherenceContent, .coherenceContent .tab-content{
+	height : 100%;
+}
+
+.coherenceContent .tab-content > div{
+	height : 85%;
+	overflow-y : auto;
+	margin-bottom : 100px;
+}
+
+.coherenceContent .tab-content #resolution{
+	padding-left : 20px;
+	padding-right : 20px;
+}
+
+
+
+
+/**********************************************/
+/**************** SPINNER *********************/
+/**********************************************/
+
+.glyphicon-refresh-animate {
+    -animation: spin .9s infinite linear;
+    -webkit-animation: spin2 .9s infinite linear;
+    
+    
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
+}
+
+.listIncoherence input[type='checkbox']{
+	margin-right : 10px;
+}
+
+.listIncoherence input[type='checkbox']{
+	margin-right : 10px;
+}
+
+.oneInputForm input{
+	min-width: 100px;
+	max-width : 600px;
+	width : 100%;
+}

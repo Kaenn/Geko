@@ -1,0 +1,14 @@
+# Ignore tous les fichiers de config commançant par .
+.*
+!.gitignore
+!.gitkeep
+
+# Ignore le repertoire node_modules
+node_modules
+
+# Ignore tous les fichiers d'environnement
+config/*
+
+# Sauf les fichiers d'envrinnement de prod et preprod
+!config/config.js.tpl
+!config/skeleton.js
