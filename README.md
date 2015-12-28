@@ -1,5 +1,5 @@
 # Geko
-Gestionnaire de coherence
+Manage multi-source consistency
 
 
 #Todo
