@@ -31,41 +31,15 @@ CoherenceUtile.prototype.getAnswerMultiple=function(){
 
 CoherenceUtile.prototype.getAllResponses=function(callback){
 	this.socket.emit("get-input-coherence",this.coherence);
-	/*$.ajax({
-		url : "ajax/getInput.ajax.php?coherence="+this.coherence+"&input="+this.input+"&elem="+this.elementId,
-		dataType : "json"
-	}).done(function(data) {
-		callback(data);
-	});*/
 }
 
 CoherenceUtile.prototype.getNext=function(blacklist){
 	this.socket.emit("get-next-incoherence",this.coherence, this.outil, this.target,blacklist);
-	
-	/*var that=this;
-	$.ajax({
-		dataType: "json",
-		url: "ajax/getIncoherence.php",
-		data: {coherence : this.coherence,blacklist : blacklist,outil : this.outil, target  :this.target}
-	}).done(function(data){
-		if("success" in data){
-			if(data.success==null){
-				callback(null,null,null);
-			}else if("elem" in data.success){
-				var proposition="";
-				if("proposition" in data.success) proposition=data.success.proposition;
-				
-				that.element=data.success.elem;
-				that.elementId=data.success.elemId;
-				
-				callback(that.element,that.elementId,proposition);
-			}
-		}
-	});*/
 }
 
-CoherenceUtile.prototype.valider=function(elemId,response,callback){
-	var isValidate=false;
+CoherenceUtile.prototype.valider=function(id,response,callback){
+	this.socket.emit("validate-incoherence",this.coherence, id,response);
+	/*var isValidate=false;
 	$.ajax({
 		dataType: "json",
 		method : "POST",
@@ -73,7 +47,7 @@ CoherenceUtile.prototype.valider=function(elemId,response,callback){
 		data: { coherence: this.coherence, elem : elemId, response: response}
 	}).done(function(data){
 		callback( ("success" in data) );
-	});
+	});*/
 }
 
 

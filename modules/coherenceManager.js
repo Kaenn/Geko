@@ -4,10 +4,19 @@
  * 
  * @author : Kaenn
  */
+var Promise = require('promise')
 var elasticsearch = require('elasticsearch');
+var redis = require('redis');
+
+
 
 var clientElasticsearch = new elasticsearch.Client({
   host: 'localhost:9200'
+});
+
+//-- Redis -- //
+var clientRedis = redis.createClient(6379, 'localhost').on("connect", function () {
+	console.log("Redis : OK");
 });
 
 var allCoherences=[];
@@ -84,6 +93,10 @@ function getNextCoherence(client,coherence,outil,target,blacklist){
 	});
 }
 
+function validateIncoherence(client,coherence,id,response){
+	
+}
+
 /**
  * Initialise la page du client et ses events
  */
@@ -101,6 +114,11 @@ var initialize=function(client,clients){
 	client.on('get-next-incoherence', function(coherence,outil,target,blacklist) {
 		// On retourne, au client qui le demande, toutes les incoherences de cette coherence
 		getNextCoherence(client,coherence,outil,target,blacklist);
+	});
+	
+	client.on('validate-incoherence', function(coherence,id,response) {
+		// On retourne, au client qui le demande, toutes les incoherences de cette coherence
+		validateIncoherence(client,coherence,id,response);
 	});
 }
 
