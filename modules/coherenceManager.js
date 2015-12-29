@@ -48,12 +48,9 @@ function getAllIncoherence(client,coherence,outil,target){
 	}, function (error) {
 		client.emit("get-all-incoherence",coherence,outil,target,"error");
 	});
-	
-	//client.emit("get-all-incoherence",coherence,allCoherences[coherence].listeCoherence(coherence,outil,target,false,[]));
 }
 
 function getNextCoherence(client,coherence,outil,target,blacklist){
-	console.log(blacklist);
 	clientElasticsearch.search({
 		index: 'coherence_'+coherence,
 		type: 'data',
@@ -80,12 +77,11 @@ function getNextCoherence(client,coherence,outil,target,blacklist){
 			if("label" in incoherence)
 				label=incoherence.label.shift();
 		}
-		console.log(coherence,id,label,input,proposition);
+
 		client.emit("get-next-incoherence",coherence,id,label,input,proposition);
 	}, function (error) {
 		client.emit("get-next-incoherence",coherence,null,null,null,null);
 	});
-	//client.emit("get-next-incoherence",coherence,allCoherences[coherence].listeCoherence(coherence,outil,target,true,blacklist));
 }
 
 /**
