@@ -6,32 +6,43 @@
  */
 var http = require("http");
 var elasticsearch = require('elasticsearch');
+var Q = require('q');
 
 var clientElasticsearch = new elasticsearch.Client({
   host: 'localhost:9200'
 });
 
+
+
+function addSchedulerCoherence(index,type,timer,update_function){
+	setTimeout(function(){
+		update_function().then(function(data){
+			updateDataToES(index,type,data);
+		});
+	},timer);
+}
+
+
 /**
- * Update and delete data of coherence in elasticsearch
- * @param coherenceName
- * @param dataCoherence
+ * Update and delete unused data of index elasticsearch
  */
-function updateDataCoherenceToES(coherenceName,dataCoherence,callback){
-	var body=[];
+function updateDataToES(index,type,data){
+	var bodyBulk=[];
+
 	var allIds=[];
-	// on ajoute les update dans le body
-	dataCoherence.forEach(function(coherence){
-		var id=coherence.id;
-		// on suavegarde toutes les id pour supprimer les id qui n'existe plus
+	// on ajoute les update dans le bodyBulk
+	data.forEach(function(d){
+		var id=d.id;
+		// on sauvegarde toutes les id pour supprimer les id qui n'existe plus
 		allIds.push(id);
-		body.push({ index: { _index: 'coherence_'+coherenceName, _type: 'data', _id: id } });
-		body.push(coherence);
+		bodyBulk.push({ index: { _index: index, _type: type, _id: id } });
+		bodyBulk.push(d);
 	});
-	
+
 	// on recherche les elements qui ne doivent plus etre présent
 	clientElasticsearch.search({
-		index: 'coherence_'+coherenceName,
-		type: 'data',
+		index: index,
+		type: type,
 		body: {
 			"fields" : ["_id"],
 			"filter" : {
@@ -40,46 +51,39 @@ function updateDataCoherenceToES(coherenceName,dataCoherence,callback){
 				}
 	        }
 		}
-	}, function (error, response) {
-		if("hits" in response && "hits" in response['hits']){
-			var hits=response['hits']['hits'];
+	}).then(function (body) {
+		if("hits" in body && "hits" in body['hits']){
+			var hits=body['hits']['hits'];
 
-			// on ajoute les delete au body
+			// on ajoute les delete au bodyBulk
 			hits.forEach(function(hit){
 				if("_index" in hit && "_type" in hit && "_id" in hit){
-					body.push({ "delete": { _index: hit._index, _type: hit._type, _id: hit._id } });
+					bodyBulk.push({ "delete": { _index: hit._index, _type: hit._type, _id: hit._id } });
 				}
 			});
 		}
-		
+	}).then(function(){
 		// On lance le groupement d'action (update+delete)
-		clientElasticsearch.bulk({
-			body: body
-		}, function (error, response) {
-			var nbUpdate=0;
-			var nbDelete=0;
-			if("items" in response){
-				response['items'].forEach(function(item){
-					if("index" in item) nbUpdate++;
-					if("delete" in item) nbDelete++;
-				});
-			}
-			console.log("Les données de la coherence '"+coherenceName+"' ont été mis à jour. (Update : "+nbUpdate+", Delete : "+nbDelete+")");
-			callback();
-		});
+		return clientElasticsearch.bulk({
+			body: bodyBulk
+		})
+	}).then(function (body) {
+		var nbUpdate=0;
+		var nbDelete=0;
+		if("items" in body){
+			body['items'].forEach(function(item){
+				if("index" in item) nbUpdate++;
+				if("delete" in item) nbDelete++;
+			});
+		}
+		console.log("L'index "+index+" / "+type+" a été mis à jour. (Update : "+nbUpdate+", Delete : "+nbDelete+")");
 	});
 }
 
-function getDataCoherence(coherenceName,repeatTime){
-	var callback=function(){};
-	if(repeatTime!=null && repeatTime!="" && repeatTime>0){
-		callback=function(){
-			setTimeout(function(){
-				getDataCoherence(coherenceName,repeatTime);
-			},repeatTime);
-		};
-	}
-	
+
+function getDataCoherence(coherenceName){
+	var deferred = Q.defer();
+    
 	var options = {
 		host: 'localhost',
 		path: '/workspace/Geko-remoteControle/get.php',
@@ -89,20 +93,19 @@ function getDataCoherence(coherenceName,repeatTime){
 	var req = http.request(options, function(res) {
 		if(res.statusCode==200){
 			res.setEncoding('utf8');
-			res.on('data', function (dataCoherence) {
-				updateDataCoherenceToES(coherenceName, JSON.parse(dataCoherence),callback);
+			res.on('data', function (data) {
+				deferred.resolve(JSON.parse(data));
 			});
 		}
 	});
 
 	req.on('error', function(e) {
-	  console.log('problem with request: ' + e.message);
+		deferred.reject(e.message);
 	});
 	
 	req.end();
+	
+	return deferred.promise;
 }
 
-var timer=9000;
-setTimeout(function(){
-	getDataCoherence("test",timer);
-},timer);
+addSchedulerCoherence("coherence_test","data",3000,getDataCoherence);
