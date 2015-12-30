@@ -63,6 +63,12 @@
 				if(coherenceName==that.parametres.coherenceClass.coherence)
 					instancierCoherence(id,label,input,proposition)
 			});
+			
+			that.coherence.socket.on('validate-incoherence',function(coherenceName,outil,target){
+				// On ne prend en compte l'evenement que si on sur cette coherence
+				if(coherenceName==that.parametres.coherenceClass.coherence)
+					next();
+			});
 		}
 		
 		var printStart=function(){
@@ -250,14 +256,12 @@
 			setTimeout(function(){
 				// recupère les resultats
 				// C'est un tableau car le plugin marche par groupe , il retourne donc les results du groupe
-				var results=that._coherenceForm[that.inputPlugin]("getResult");
+				var results=that._coherenceForm.children().first()[that.inputPlugin]("getResult");
 				
 				if(results.length > 0){
 					if(results[0]!=null && results[0]!=""){
-						
-						that.coherence.valider(that.elementId,results[0],function(){
-							next();
-						});
+						console.log(that.elementId,results[0]);
+						that.coherence.valider(that.elementId,results[0]);
 					}else{
 						printError("Vous devez choisir une réponse.");	
 						setStatus("work");

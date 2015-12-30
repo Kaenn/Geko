@@ -38,7 +38,7 @@ CoherenceUtile.prototype.getNext=function(blacklist){
 }
 
 CoherenceUtile.prototype.valider=function(id,response,callback){
-	this.socket.emit("validate-incoherence",this.coherence, id,response);
+	this.socket.emit("validate-incoherence", this.coherence, this.outil, this.target, id, response);
 	/*var isValidate=false;
 	$.ajax({
 		dataType: "json",

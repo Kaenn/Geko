@@ -5,7 +5,6 @@
  * @author : Kaenn
  */
 var http = require("http");
-var querystring = require('querystring');
 var elasticsearch = require('elasticsearch');
 
 var clientElasticsearch = new elasticsearch.Client({
