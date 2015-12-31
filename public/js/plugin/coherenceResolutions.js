@@ -45,10 +45,12 @@
 				that.coherence=that.parametres.coherenceClass;
 			}
 			
+			addListener();
+			
 			that.addClass("listIncoherence");
 			
 			that._spinner=$("<span>",{"class":"glyphicon glyphicon-refresh glyphicon-refresh-animate"}).hide();
-			that._listePropositions=$("<div>");
+			that._listeResolutions=$("<div>");
 			
 			that._button=$("<div>",{"style":"padding : 25px;"}).append(
 				$("<button>",{'type':"button", 'class':"btn btn-default"})
@@ -67,7 +69,7 @@
 			that.append([
 			    that._spinner,
 			    that._button,
-			    that._listePropositions,
+			    that._listeResolutions,
 			    that._modalValidation
 			]);
 			
@@ -76,9 +78,21 @@
 			return that;
 		};
 		
+		var addListener=function(){
+			that.parametres.coherenceClass.socket.on('get-all-incoherence',function(coherenceName,outil,target,allIncoherence){
+				console.log(coherenceName,outil,target,allIncoherence);
+				// On ne prend en compte l'evenement que si on sur cette coherence
+				if(coherenceName==that.parametres.coherenceClass.coherence){
+					addListe(allIncoherence);
+				
+					work();
+				}
+			});
+		}
+		
 		var showModalValidation=function(){
 			that.coherenceCheck=[];
-			var checkedIncoherences=that._listePropositions.find('.validationCheckbox:checked');
+			var checkedIncoherences=that._listeResolutions.find('.validationCheckbox:checked');
 			
 			if(checkedIncoherences.length > 0){
 				checkedIncoherences.each(function(){
@@ -120,46 +134,39 @@
 		}
 		
 		var loadListePropositions=function(){
-			that._listePropositions.empty();
+			that._listeResolutions.empty();
 			
 			wait();
 			
 			// Ajout d'un timeout pour afficher le wait (sinon blqouer par les requetes ajax)
 			setTimeout(function(){
 				if(that.coherence!=null){
-					var allIncoherence=that.coherence.loadAllIncoherence(function(incoherences){
-						addListe(incoherences);
-						
-						work();
-					});
+					var allIncoherence=that.coherence.loadAllIncoherence();
 				}
 			},100);
 		}
 		
-		var addListe=function(incoherences,proposition){
+		var addListe=function(incoherences){
 			var listeIncoherence=$("<ul>");
 			
-			function SortByElem(a, b){
-				var aName = a.elem.toLowerCase();
-				var bName = b.elem.toLowerCase(); 
+			function SortByLabel(a, b){
+				var aName = a.label.toLowerCase();
+				var bName = b.label.toLowerCase(); 
 				return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
 			}
 
-			incoherences.sort(SortByElem);
+			incoherences.sort(SortByLabel);
 			
 			$.each(incoherences,function(index,incoherence){
 				var li=$("<li>",{"class":"list-group-item"});
 				li.append($("<input>",{'class' : "validationCheckbox", 'type' : 'checkbox',"elemId" : incoherence.id}));
 				
-				li.append($("<span>").text(incoherence.name));
+				li.append($("<span>").text(incoherence.label));
 				
-				listeIncoherence.append($("<li>",{"class":"list-group-item"}).append([
-				    $("<input>",{'class' : "validationCheckbox", 'type' : 'checkbox', "elemId" : incoherence.elemId}),
-				    $("<span>").text(incoherence.elem)
-				]));
+				listeIncoherence.append(li);
 			});
-			
-			that._listePropositions.append(listeIncoherence);
+			that._listeResolutions.empty();
+			that._listeResolutions.append(listeIncoherence);
 		}
 		
 		
@@ -167,15 +174,15 @@
 			switch(status){
 				case "wait" : 	that._spinner.show();
 								that._button.hide();
-								that._listePropositions.hide();
+								that._listeResolutions.hide();
 								break;
 				case "work" : 	that._spinner.hide();
 								that._button.show();
-								that._listePropositions.show();
+								that._listeResolutions.show();
 				    			break;
 				default : 	that._spinner.hide();
 							that._button.show();
-							that._listePropositions.show();
+							that._listeResolutions.show();
     		    			break;
 			}
 		}

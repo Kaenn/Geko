@@ -78,9 +78,9 @@ function getAllIncoherence(client,coherence,outil,target){
 		if(body.hits.hits.length > 0){
 			var hits=body.hits.hits;
 			hits.forEach(function(hit){
-				var source=hit['fields'];
-				if("label" in source)
-					allIncoherence.push({"id":hit['_id'],"label":source.label});
+				var fields=hit['fields'];
+				if("label" in fields)
+					allIncoherence.push({"id":hit['_id'],"label":fields.label.shift()});
 			});
 		}
 
