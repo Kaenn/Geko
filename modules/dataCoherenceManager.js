@@ -68,15 +68,11 @@ function searchCoherence(redisKey_regexp,index,type,fields,query,blacklist,juste
 	        }
 		}
 		
-		console.log(index,type,blacklist);
-		
 		if(query!=null)
 			body['query']=query;
 		
 		if(justeOne!=null && justeOne)
 			body['size']=1;
-		
-		console.log(body);
 		
 		// Search all incoherence not in blacklist
 		return clientElasticsearch.search({

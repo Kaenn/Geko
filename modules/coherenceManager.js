@@ -25,7 +25,7 @@ coherencesName.forEach(function(name){
 
 
 function refreshNbCoherence(clients,coherence,outil,target){
-	dataCoherenceManager.searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',['id'],allCoherences[coherence].getQueryElasticSearch(),[],false).then(function(body){
+	dataCoherenceManager.searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',['_id'],allCoherences[coherence].getQueryElasticSearch(),[],false).then(function(body){
 		clients.emit("refresh-nb-incoherence",coherence,outil,target,body.hits.total);
 	});
 }
@@ -72,10 +72,19 @@ function getNextCoherence(client,coherence,outil,target,blacklist){
 
 
 function getAllIncoherence(client,coherence,outil,target){
-	dataCoherenceManager.searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',["id", "label"],allCoherences[coherence].getQueryElasticSearch(),[],false).then(function(body){
-		client.emit("get-all-incoherence",coherence,outil,target,body.hits.hits.map(function(hit) {
-			  return { "id" : hit.fields.id.shift(), "label" : hit.fields.label.shift() };
-		}));
+	dataCoherenceManager.searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',["_id", "label"],allCoherences[coherence].getQueryElasticSearch(),[],false).then(function(body){
+		var allIncoherence=[];
+
+		if(body.hits.hits.length > 0){
+			var hits=body.hits.hits;
+			hits.forEach(function(hit){
+				var source=hit['fields'];
+				if("label" in source)
+					allIncoherence.push({"id":hit['_id'],"label":source.label});
+			});
+		}
+
+		client.emit("get-all-incoherence",coherence,outil,target, allIncoherence);
 	});
 }
 
@@ -95,7 +104,6 @@ function validateIncoherence(client,coherence,outil,target,id,responses){
 	
 	if(coherenceClass.hasPropositionUnique()){
 		responses.forEach(function(response){
-			console.log("repsonse",response);
 			// Add data excpetion for exclude this to the incoherence return
 			dataCoherenceManager.addDataException("coherence_"+coherence,"propositions",response,coherenceClass.getTimer())
 			.then(function(){
