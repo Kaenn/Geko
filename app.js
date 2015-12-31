@@ -9,7 +9,6 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var ldap = require('./modules/ldap');
 var coherenceManager = require('./modules/coherenceManager');
-var coherenceScheduler = require('./modules/coherenceScheduler');
 
 
 // Recuperation de la variable de config

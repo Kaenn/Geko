@@ -1,4 +1,5 @@
 var http = require("http");
+var Q = require('q');
 
 function getQueryElasticSearch(){
 	return {
@@ -70,3 +71,4 @@ exports.getQueryElasticSearch = getQueryElasticSearch;
 exports.getInput = getInput;
 exports.getProposition = getProposition;
 exports.resolve = resolve;
+exports.getData = getData;

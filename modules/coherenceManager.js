@@ -4,96 +4,32 @@
  * 
  * @author : Kaenn
  */
-var elasticsearch = require('elasticsearch');
-var redis = require('redis');
 var Q = require('q');
-
-var clientElasticsearch = new elasticsearch.Client({
-  host: 'localhost:9200'
-});
-console.log("ElasticSearch : OK");
-
-//-- Redis -- //
-var clientRedis = redis.createClient(6379, 'localhost').on("connect", function () {
-	console.log("Redis : OK");
-});
+var dataCoherenceManager = require('./dataCoherenceManager');
 
 
 // Enregistrement de toutes les coherences
 var allCoherences=[];
 var coherencesName=['test'];
+
+// Action for all coherence
 coherencesName.forEach(function(name){
+	// get coherence class
 	allCoherences[name]=require("../coherences/"+name);
+	
+	// Add getData coherence to scheduler
+	dataCoherenceManager.addSchedulerDataCoherence("coherence_"+name,"data",3000,allCoherences[name].getData);
 });
 
 
-// Denodify redis fonction
-var clientRedisKeys = Q.nbind(clientRedis.keys, clientRedis);
-var clientRedisGet = Q.nbind(clientRedis.get, clientRedis);
-var clientRedisSet = Q.nbind(clientRedis.set, clientRedis);
-var clientRedisExpire = Q.nbind(clientRedis.expire, clientRedis);
-
-function getRedisKeys(keys){
-	var promises = [];
-	
-	keys.forEach(function(key){
-        promises.push(clientRedisGet(key));
-    });
-	 
-    return Q.all(promises);
-}
-
-
-/**
- * Search in Elastisearch with extend blacklist in redis
- * @param redisKey_regexp Regexp redis for extend blacklist
- * @param index Index ElasticSearch
- * @param type Type ElasticSearch
- * @param fields Fields ElasticSearch
- * @param query Query ElasticSearch
- * @param blacklist Default blacklist
- * @param justeOne Boolean for juste have one result or more
- * @returns
- */
-function searchCoherence(redisKey_regexp,index,type,fields,query,blacklist,justeOne){
-	// Get all validate in progress
-	return clientRedisKeys(redisKey_regexp)
-	.then(getRedisKeys)
-	.then(function(validateInProgress){
-		// Add validate in progress to blacklist
-		blacklist=blacklist.concat(validateInProgress);
-		
-		var body={
-			"fields": fields,
-			"query": query,
-			"filter" : {
-				"not" : {
-	            	"terms" : { "id" : blacklist}
-				}
-	        }
-		}
-		
-		if(justeOne!=null && justeOne)
-			body['size']=1;
-		
-		// Search all incoherence not in blacklist
-		return clientElasticsearch.search({
-			index: index,
-			type: type,
-			body: body
-		});
-	});
-}
-
-
 function refreshNbCoherence(clients,coherence,outil,target){
-	searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',['id'],allCoherences[coherence].getQueryElasticSearch(),[],false).then(function(body){
+	dataCoherenceManager.searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',['id'],allCoherences[coherence].getQueryElasticSearch(),[],false).then(function(body){
 		clients.emit("refresh-nb-incoherence",coherence,outil,target,body.hits.total);
 	});
 }
 
 function getNextCoherence(client,coherence,outil,target,blacklist){
-	searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',["id", "label"],allCoherences[coherence].getQueryElasticSearch(),blacklist,true).then(function(body){
+	dataCoherenceManager.searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',["id", "label"],allCoherences[coherence].getQueryElasticSearch(),blacklist,true).then(function(body){
 		var id=null;
 		var label=null;
 		var input=allCoherences[coherence].getInput();
@@ -113,7 +49,7 @@ function getNextCoherence(client,coherence,outil,target,blacklist){
 
 
 function getAllIncoherence(client,coherence,outil,target){
-	searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',["id", "label"],allCoherences[coherence].getQueryElasticSearch(),[],false).then(function(body){
+	dataCoherenceManager.searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',["id", "label"],allCoherences[coherence].getQueryElasticSearch(),[],false).then(function(body){
 		client.emit("get-all-incoherence",coherence,outil,target,body.hits.hits.map(function(hit) {
 			  return { "id" : hit.fields.id.shift(), "label" : hit.fields.label.shift() };
 		}));
@@ -123,13 +59,13 @@ function getAllIncoherence(client,coherence,outil,target){
 
 
 function validateIncoherence(client,coherence,outil,target,id,response){
+	// launch resolve action
 	allCoherences[coherence].resolve(id,response);
 	
-	var key="coherence:"+coherence+":validate:"+id;
-	
-	clientRedisSet(key,id)
-	.then(clientRedisExpire(key,30))
+	// Add data excpetion for exclude this to the incoherence return
+	dataCoherenceManager.addDataException("coherence_"+coherence,"data",id,30)
 	.then(function(){
+		// Prevent client of the begin of validate workflow
 		client.emit("validate-incoherence",coherence,outil,target);
 	});
 }
