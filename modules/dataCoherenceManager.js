@@ -16,6 +16,11 @@ console.log("ElasticSearch : OK");
 //-- Redis -- //
 var clientRedis = redis.createClient(6379, 'localhost').on("connect", function () {
 	console.log("Redis : OK");
+	
+	clientRedisKeys('*').then(function(r){
+		console.log(r);
+	});
+	
 });
 
 
@@ -56,16 +61,22 @@ function searchCoherence(redisKey_regexp,index,type,fields,query,blacklist,juste
 		
 		var body={
 			"fields": fields,
-			"query": query,
 			"filter" : {
 				"not" : {
-	            	"terms" : { "id" : blacklist}
+	            	"terms" : { "_id" : blacklist}
 				}
 	        }
 		}
 		
+		console.log(index,type,blacklist);
+		
+		if(query!=null)
+			body['query']=query;
+		
 		if(justeOne!=null && justeOne)
 			body['size']=1;
+		
+		console.log(body);
 		
 		// Search all incoherence not in blacklist
 		return clientElasticsearch.search({
@@ -79,9 +90,9 @@ function searchCoherence(redisKey_regexp,index,type,fields,query,blacklist,juste
 
 function addDataException(index,type,id,expiration){
 	var key=getKeyDataException(index,type,id);
-	
 	return clientRedisSet(key,id)
-	.then(clientRedisExpire(key,30))
+	.then(clientRedisExpire(key,expiration))
+	.catch(console.log);
 }
 
 function getDataException(index,type){
@@ -96,7 +107,7 @@ function getKeyDataException(index,type,id){
 
 
 function addSchedulerDataCoherence(index,type,timer,update_function){
-	setTimeout(function(){
+	setInterval(function(){
 		update_function().then(function(data){
 			updateDataToES(index,type,data);
 		});
@@ -114,6 +125,8 @@ function updateDataToES(index,type,data){
 	// on ajoute les update dans le bodyBulk
 	data.forEach(function(d){
 		var id=d.id;
+		delete d['id']; // Delete the id of the body because is the _id of elasticsearch
+		
 		// on sauvegarde toutes les id pour supprimer les id qui n'existe plus
 		allIds.push(id);
 		bodyBulk.push({ index: { _index: index, _type: type, _id: id } });

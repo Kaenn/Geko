@@ -260,7 +260,6 @@
 				
 				if(results.length > 0){
 					if(results[0]!=null && results[0]!=""){
-						console.log(that.elementId,results[0]);
 						that.coherence.valider(that.elementId,results[0]);
 					}else{
 						printError("Vous devez choisir une réponse.");	

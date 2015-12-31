@@ -39,12 +39,15 @@
 
 	$.OneInputForm=function(that,methodOrOptions){
 		that.blacklist=[];
+		that.idOfValue={};
 		
 		var initialize = function(){
 			that.addClass("oneInputForm");
 			
 			printContent();
 			initEvent();
+			
+			saveIdValue();
 			return that;
 		};
 		
@@ -91,8 +94,8 @@
 				// iterate through the pool of strings and for any string that
 				// contains the substring `q`, add it to the `matches` array
 				$.each(strs, function(i, str) {
-					if (substrRegex.test(str.name)) {
-						matches.push(formatageName(str.name,str.id));
+					if (substrRegex.test(str.label)) {
+						matches.push(formatageName(str.label,str.id));
 					}
 				});
 
@@ -100,12 +103,22 @@
 		    };
 		};
 		
-		var formatageName=function(name,id){
-			return name+" - ID : "+id;
+		var formatageName=function(label,id){
+			return label+" - ID : "+id;
 		}
 		
 		var getResult=function(){
-			return [that._input.val()];
+			return [idOfValue(that._input.val())];
+		}
+		
+		var saveIdValue=function(){
+			$.each(that.parametres.data,function(index,oneData){
+				that.idOfValue[formatageName(oneData['label'],oneData['id'])]=oneData['id'];
+			});
+		}
+		
+		var idOfValue=function(val){
+			return that.idOfValue[val];
 		}
 		
 		var initEvent=function(){

@@ -15,10 +15,12 @@ var coherencesName=['test'];
 // Action for all coherence
 coherencesName.forEach(function(name){
 	// get coherence class
-	allCoherences[name]=require("../coherences/"+name);
+	var coherenceClass=require("../coherences/"+name);
+	allCoherences[name]=coherenceClass;
 	
 	// Add getData coherence to scheduler
-	dataCoherenceManager.addSchedulerDataCoherence("coherence_"+name,"data",3000,allCoherences[name].getData);
+	dataCoherenceManager.addSchedulerDataCoherence("coherence_"+name,"data",coherenceClass.getTimerMS(),coherenceClass.getData);
+	dataCoherenceManager.addSchedulerDataCoherence("coherence_"+name,"propositions",coherenceClass.getTimerMS(),coherenceClass.getDataPropositions);
 });
 
 
@@ -29,22 +31,43 @@ function refreshNbCoherence(clients,coherence,outil,target){
 }
 
 function getNextCoherence(client,coherence,outil,target,blacklist){
-	dataCoherenceManager.searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',["id", "label"],allCoherences[coherence].getQueryElasticSearch(),blacklist,true).then(function(body){
-		var id=null;
+	var promises = [
+	    dataCoherenceManager.searchCoherence("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',["_id", "label"],allCoherences[coherence].getQueryElasticSearch(),blacklist,true),
+	    dataCoherenceManager.searchCoherence("coherence:"+coherence+":propositions:*",'coherence_'+coherence,'propositions',["_source"],null,[],false)
+	];
+
+    return Q.all(promises).then(function(body){
+    	var bodyIncoherence=body.shift();
+    	var bodyInput=body.shift();
+
+    	var id=null;
 		var label=null;
 		var input=allCoherences[coherence].getInput();
 		var proposition=allCoherences[coherence].getProposition();
 		
-		if(body.hits.hits.length > 0){
-			var incoherence=body.hits.hits.shift().fields;
-			if("id" in incoherence)
-				id=incoherence.id.shift();
-			if("label" in incoherence)
-				label=incoherence.label.shift();
+		if(bodyIncoherence.hits.hits.length > 0){
+			var hit=bodyIncoherence.hits.hits.shift();
+			id=hit['_id'];
+			var fields=hit['fields'];
+			if("label" in fields)
+				label=fields.label;
+		}
+		
+		var input=[];
+		if(bodyInput.hits.hits.length > 0){
+			var hits=bodyInput.hits.hits;
+			
+			hits.forEach(function(hit){
+				var idProposition=hit['_id'];
+				var source=hit['_source'];
+				if("label" in source)
+					input.push({"id":idProposition,"label":source.label});
+			});
 		}
 		
 		client.emit("get-next-incoherence",coherence,id,label,input,proposition);
-	});
+    })
+    .catch(console.log);
 }
 
 
@@ -58,16 +81,29 @@ function getAllIncoherence(client,coherence,outil,target){
 
 
 
-function validateIncoherence(client,coherence,outil,target,id,response){
+function validateIncoherence(client,coherence,outil,target,id,responses){
+	var coherenceClass=allCoherences[coherence];
 	// launch resolve action
-	allCoherences[coherence].resolve(id,response);
+	coherenceClass.resolve(id,responses);
 	
 	// Add data excpetion for exclude this to the incoherence return
-	dataCoherenceManager.addDataException("coherence_"+coherence,"data",id,30)
+	dataCoherenceManager.addDataException("coherence_"+coherence,"data",id,coherenceClass.getTimer())
 	.then(function(){
 		// Prevent client of the begin of validate workflow
 		client.emit("validate-incoherence",coherence,outil,target);
 	});
+	
+	if(coherenceClass.hasPropositionUnique()){
+		responses.forEach(function(response){
+			console.log("repsonse",response);
+			// Add data excpetion for exclude this to the incoherence return
+			dataCoherenceManager.addDataException("coherence_"+coherence,"propositions",response,coherenceClass.getTimer())
+			.then(function(){
+				// Prevent client of the begin of validate workflow
+				client.emit("validate-incoherence",coherence,outil,target);
+			});
+		});
+	}
 }
 
 
