@@ -37,6 +37,35 @@ function resolve(id,response){
 	req.end();
 }
 
+
+function getData(){
+	var deferred = Q.defer();
+    
+	var options = {
+		host: 'localhost',
+		path: '/workspace/Geko-remoteControle/get.php',
+		method: 'GET'
+	};
+
+	var req = http.request(options, function(res) {
+		if(res.statusCode==200){
+			res.setEncoding('utf8');
+			res.on('data', function (data) {
+				deferred.resolve(JSON.parse(data));
+			});
+		}
+	});
+
+	req.on('error', function(e) {
+		deferred.reject(e.message);
+	});
+	
+	req.end();
+	
+	return deferred.promise;
+}
+
+
 exports.getQueryElasticSearch = getQueryElasticSearch;
 exports.getInput = getInput;
 exports.getProposition = getProposition;

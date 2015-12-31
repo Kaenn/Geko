@@ -1,10 +1,8 @@
 /**
- * Middleware permettant de gérer le rechargement des coherences.
- * Source des middleware de coherence : ../coherences/<coherence-name>
+ * Middleware permettant de gérer le rechargement d'index elasticsearch
  * 
  * @author : Kaenn
  */
-var http = require("http");
 var elasticsearch = require('elasticsearch');
 var Q = require('q');
 
@@ -78,34 +76,6 @@ function updateDataToES(index,type,data){
 		}
 		console.log("L'index "+index+" / "+type+" a été mis à jour. (Update : "+nbUpdate+", Delete : "+nbDelete+")");
 	});
-}
-
-
-function getDataCoherence(coherenceName){
-	var deferred = Q.defer();
-    
-	var options = {
-		host: 'localhost',
-		path: '/workspace/Geko-remoteControle/get.php',
-		method: 'GET'
-	};
-
-	var req = http.request(options, function(res) {
-		if(res.statusCode==200){
-			res.setEncoding('utf8');
-			res.on('data', function (data) {
-				deferred.resolve(JSON.parse(data));
-			});
-		}
-	});
-
-	req.on('error', function(e) {
-		deferred.reject(e.message);
-	});
-	
-	req.end();
-	
-	return deferred.promise;
 }
 
 addSchedulerCoherence("coherence_test","data",3000,getDataCoherence);
