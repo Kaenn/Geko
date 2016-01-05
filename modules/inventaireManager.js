@@ -179,8 +179,6 @@ var initialize=function(client,clients){
 		// Validate incoherence
 		validateIncoherence(client,coherence,outil,target,id,response);
 	});
-	
-	dataInventaireManager.getPropositionOfIncoherence("coherence_test","data",1,["proposition"]).then(function(proposition){console.log(proposition);});
 }
 
 exports.initialize = initialize;
