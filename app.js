@@ -8,7 +8,7 @@ var multer = require('multer');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var ldap = require('./modules/ldap');
-var coherenceManager = require('./modules/coherenceManager');
+var inventaireManager = require('./modules/inventaireManager');
 
 
 // Recuperation de la variable de config
@@ -100,7 +100,7 @@ io.sockets.on('connection', function(client) {
 	
 	client.on("loadOngletListener",function(onglet){
 		switch(onglet){
-			case "coherence" : coherenceManager.initialize(client,io.sockets);
+			case "coherence" : inventaireManager.initialize(client,io.sockets);
 		}
 	});
 });

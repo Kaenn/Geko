@@ -71,8 +71,8 @@
 				    that._input
 			    ]);
 				
-				if(that.parametres.proposition!=null && that.parametres.proposition!="" && "value" in that.parametres.proposition){
-					that._input.val(that.parametres.proposition.value);
+				if(that.parametres.proposition!=null && that.parametres.proposition!="" && "label" in that.parametres.proposition){
+					that._input.val(that.parametres.proposition.label);
 				}
 			}else{
 				that.trigger("print-error","Problème lors de la récupération des Autocomplete.");

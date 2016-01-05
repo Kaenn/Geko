@@ -52,7 +52,7 @@ function getRedisKeys(keys){
  * @param justeOne Boolean for juste have one result or more
  * @returns
  */
-function searchCoherence(redisKey_regexp,index,type,fields,query,blacklist,justeOne){
+function searchInInventaire(redisKey_regexp,index,type,fields,query,blacklist,justeOne){
 	// Get all validate in progress
 	return getDataException(index,type)
 	.then(function(dataException){
@@ -80,6 +80,21 @@ function searchCoherence(redisKey_regexp,index,type,fields,query,blacklist,juste
 			type: type,
 			body: body
 		});
+	});
+}
+
+function getPropositionOfIncoherence(index,type,id,field){
+	// Search all incoherence not in blacklist
+	return clientElasticsearch.get({
+		index: index,
+		type: type,
+		id: id,
+		fields: [field]
+	}).then(function(res){
+		if("fields" in res && field in res['fields']){
+			return res['fields'][field].shift();
+		}
+		return null;
 	});
 }
 
@@ -170,7 +185,8 @@ function updateDataToES(index,type,data){
 	});
 }
 
-exports.searchCoherence = searchCoherence;
+exports.searchInInventaire = searchInInventaire;
+exports.getPropositionOfIncoherence = getPropositionOfIncoherence;
 exports.addDataException = addDataException;
 exports.getDataException = getDataException;
 exports.addSchedulerDataCoherence = addSchedulerDataCoherence;
