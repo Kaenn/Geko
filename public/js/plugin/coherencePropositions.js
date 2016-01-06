@@ -58,12 +58,15 @@
 		};
 		
 		var addListener=function(){
-			that.parametres.coherenceClass.socket.on('get-all-incoherence',function(coherenceName,outil,target,allIncoherence){
-				// On ne prend en compte l'evenement que si on sur cette coherence
-				if(coherenceName==that.parametres.coherenceClass.coherence)
-					loadListePropositions(allIncoherence);
-			});
+			that.parametres.coherenceClass.socket.removeListener('get-all-incoherence',getAllIncoherence);
+			that.parametres.coherenceClass.socket.on('get-all-incoherence',getAllIncoherence);
 		}
+		
+		var getAllIncoherence=function(coherenceName,outil,target,allIncoherence){
+			// On ne prend en compte l'evenement que si on sur cette coherence
+			if(coherenceName==that.parametres.coherenceClass.coherence)
+				loadListePropositions(allIncoherence);
+		};
 		
 		/**
 		 * Demande au serveur de charger toutes les incoherences
@@ -91,14 +94,16 @@
 					if("propositions" in incoherence){
 						var proposition=incoherence.propositions.shift();
 						
-						// On initialise la liste si elle n'existe pas
-						if(! (proposition in incoherencesByProposition) ){
-							incoherencesByProposition[proposition.label]=proposition;
+						if(typeof proposition !== "undefined"){
+							// On initialise la liste si elle n'existe pas
+							if(! (proposition.label in incoherencesByProposition) ){							
+								incoherencesByProposition[proposition.label]=proposition;
+
+								incoherencesByProposition[proposition.label]["incoherences"]=[];
+							}
 							
-							incoherencesByProposition[proposition.label]["incoherences"]=[];
+							incoherencesByProposition[proposition.label]["incoherences"].push({"label" : incoherence.label, "id" : incoherence.id});	
 						}
-						
-						incoherencesByProposition[proposition.label]["incoherences"].push({"label" : incoherence.label, "id" : incoherence.id});
 					}else{
 						incoherencesUnknown.push({"label" : incoherence.label, "id" : incoherence.id});
 					}
@@ -158,9 +163,8 @@
 			var listeIncoherence=$("<ul>");
 			
 			function SortByLabel(a, b){
-				console.log(a);
 				var aLabel = a.label.toLowerCase();
-				var bLabel = b.label.toLowerCase(); 
+				var bLabel = b.label.toLowerCase();
 				return ((aLabel < bLabel) ? -1 : ((aLabel > bLabel) ? 1 : 0));
 			}
 

@@ -182,7 +182,6 @@ function getAllIncoherence(client,coherence,outil,target){
 		});
 		
 		return getPropositions(coherence,allIncoherenceId).then(function(allPropositions){
-			console.log(allPropositions);
 			// on reclasse les propositions par identifier 
 			var propositionsByIdentifier={};
 			allPropositions.forEach(function(oneProposition){
@@ -206,7 +205,6 @@ function getAllIncoherence(client,coherence,outil,target){
 			return allIncoherence;
 		});
 	}).then(function(allIncoherence){
-		console.log(allIncoherence);
 		client.emit("get-all-incoherence",coherence,outil,target, allIncoherence);
 	})
 	.catch(console.log);

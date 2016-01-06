@@ -58,12 +58,14 @@
 		};
 		
 		var addListener=function(){
+			that.coherence.socket.removeAllListeners('get-all-incoherence');
 			that.coherence.socket.on('get-next-incoherence',function(coherenceName,id,label,input,propositions){
 				// On ne prend en compte l'evenement que si on sur cette coherence
 				if(coherenceName==that.parametres.coherenceClass.coherence)
 					instancierCoherence(id,label,input,propositions)
 			});
 			
+			that.coherence.socket.removeAllListeners('validate-incoherence');
 			that.coherence.socket.on('validate-incoherence',function(coherenceName,outil,target){
 				// On ne prend en compte l'evenement que si on sur cette coherence
 				if(coherenceName==that.parametres.coherenceClass.coherence)

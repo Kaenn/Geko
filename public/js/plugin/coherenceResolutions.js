@@ -79,14 +79,17 @@
 		};
 		
 		var addListener=function(){
-			that.parametres.coherenceClass.socket.on('get-all-incoherence',function(coherenceName,outil,target,allIncoherence){
-				// On ne prend en compte l'evenement que si on sur cette coherence
-				if(coherenceName==that.parametres.coherenceClass.coherence){
-					addListe(allIncoherence);
-				
-					work();
-				}
-			});
+			that.parametres.coherenceClass.socket.removeListener('get-all-incoherence',getAllIncoherence);
+			that.parametres.coherenceClass.socket.on('get-all-incoherence',getAllIncoherence);
+		}
+		
+		var getAllIncoherence=function(coherenceName,outil,target,allIncoherence){
+			// On ne prend en compte l'evenement que si on sur cette coherence
+			if(coherenceName==that.parametres.coherenceClass.coherence){
+				addListe(allIncoherence);
+			
+				work();
+			}
 		}
 		
 		var showModalValidation=function(){

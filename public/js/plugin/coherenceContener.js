@@ -177,13 +177,15 @@
 				desc.content.on("refresh",function(){
 					refresh();
 				});
-			})
+			});
 			
 
-			that._coherenceContent.append([
-               	onglets,
-               	contents
-            ]);
+			that._coherenceContent.append(
+				$("<div>").append([
+	               	onglets,
+	               	contents
+	            ])
+	        );
 			
 			onglets.find('li a[href="#resolution"]').trigger('click');
 		}
