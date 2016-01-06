@@ -21,8 +21,12 @@ coherencesName.forEach(function(name){
 
 
 function refreshNbCoherence(clients,coherence,outil,target){
+	var fields=allCoherences[coherence].getParams("fields");
+	var search_body=allCoherences[coherence].getParams("search");
+	search_body["fields"]=fields;
+	
 	var redisExceptRegexp=getKeyDataException(coherence,"validate","*");
-	dataInventaireManager.searchInInventaire(redisExceptRegexp,"source",allCoherences[coherence].getParams("source"),allCoherences[coherence].getParams("search"),[],false).then(function(body){
+	dataInventaireManager.searchInInventaire(redisExceptRegexp,"source",allCoherences[coherence].getParams("source"),search_body,[],false).then(function(body){
 		clients.emit("refresh-nb-incoherence",coherence,outil,target,body.hits.total);
 	})
 	.catch(console.log);
@@ -125,18 +129,14 @@ function getNextCoherence(client,coherence,outil,target,blacklist){
 
 
 function getAllIncoherence(client,coherence,outil,target){
-	dataInventaireManager.searchInInventaire("coherence:"+coherence+":validate:*",'coherence_'+coherence,'data',["_id", "label"],allCoherences[coherence].getParams("query"),[],false).then(function(body){
-		var allIncoherence=[];
-
-		if(body.hits.hits.length > 0){
-			var hits=body.hits.hits;
-			hits.forEach(function(hit){
-				var fields=hit['fields'];
-				if("label" in fields)
-					allIncoherence.push({"id":hit['_id'],"label":fields.label.shift()});
-			});
-		}
-
+	var fields=allCoherences[coherence].getParams("fields");
+	var search_body=allCoherences[coherence].getParams("search");
+	search_body["fields"]=fields;
+	
+	var redisExceptRegexp=getKeyDataException(coherence,"validate","*");
+	dataInventaireManager.searchInInventaire(redisExceptRegexp,'source',allCoherences[coherence].getParams("source"),search_body,[],false).then(function(body){
+		var allIncoherence=getFieldsInSearchBody(body,fields[0],fields[1]);
+		
 		client.emit("get-all-incoherence",coherence,outil,target, allIncoherence);
 	});
 }
@@ -214,10 +214,10 @@ var initialize=function(client,clients){
 		refreshNbCoherence(clients,coherence,outil,target);
 	});
 	
-	/*client.on('get-all-incoherence', function(coherence,outil,target) {
+	client.on('get-all-incoherence', function(coherence,outil,target) {
 		// Return all coherence to client
 		getAllIncoherence(client,coherence,outil,target);
-	});*/
+	});
 	
 	client.on('get-next-incoherence', function(coherence,outil,target,blacklist) {
 		// Return next incoherence to client

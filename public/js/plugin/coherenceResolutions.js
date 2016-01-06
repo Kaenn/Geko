@@ -80,7 +80,6 @@
 		
 		var addListener=function(){
 			that.parametres.coherenceClass.socket.on('get-all-incoherence',function(coherenceName,outil,target,allIncoherence){
-				console.log(coherenceName,outil,target,allIncoherence);
 				// On ne prend en compte l'evenement que si on sur cette coherence
 				if(coherenceName==that.parametres.coherenceClass.coherence){
 					addListe(allIncoherence);

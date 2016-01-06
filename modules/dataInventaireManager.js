@@ -7,6 +7,7 @@
 var elasticsearch = require('elasticsearch');
 var redis = require('redis');
 var Q = require('q');
+var extend = require('util')._extend;
 
 var clientElasticsearch = new elasticsearch.Client({
   host: 'localhost:9200'
@@ -52,21 +53,21 @@ function searchInInventaire(redisKey_regexp,index,type,search_body,blacklist,jus
 		// Add validate in progress to blacklist
 		blacklist=blacklist.concat(dataException);
 		
-		
-		search_body["filter"]= {
+		var body=extend({}, search_body);
+		body["filter"]= {
 			"not" : {
             	"terms" : { "_id" : blacklist}
 			}
         };
 		
 		if(justeOne!=null && justeOne)
-			search_body['size']=1;
-		
+			body['size']=1;
+
 		// Search all incoherence not in blacklist
 		return clientElasticsearch.search({
 			index: index,
 			type: type,
-			body: search_body
+			body: body
 		})
 		.catch(console.log);
 	});

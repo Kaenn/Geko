@@ -13,7 +13,14 @@ var params={
 	fields : ["id","hostname"],
 	responses_source: "sourceResponses1",
 	responses_search: {},
-	responses_fields: ["id","project_name"]
+	responses_fields: ["id","project_name"],
+	propositions: 
+	    {
+			source: "source1",
+			fields : ["zabbix.hostgroupName"],
+			equaldTo: "label"
+	    }
+	
 }
 
 
