@@ -43,43 +43,32 @@ function getRedisKeys(keys){
 
 /**
  * Search in Elastisearch with extend blacklist in redis
- * @param redisKey_regexp Regexp redis for extend blacklist
- * @param index Index ElasticSearch
- * @param type Type ElasticSearch
- * @param fields Fields ElasticSearch
- * @param query Query ElasticSearch
- * @param blacklist Default blacklist
- * @param justeOne Boolean for juste have one result or more
  * @returns
  */
-function searchInInventaire(redisKey_regexp,index,type,fields,query,blacklist,justeOne){
+function searchInInventaire(redisKey_regexp,index,type,search_body,blacklist,justeOne){
 	// Get all validate in progress
-	return getDataException(index,type)
+	return getDataException(redisKey_regexp)
 	.then(function(dataException){
 		// Add validate in progress to blacklist
 		blacklist=blacklist.concat(dataException);
 		
-		var body={
-			"fields": fields,
-			"filter" : {
-				"not" : {
-	            	"terms" : { "_id" : blacklist}
-				}
-	        }
-		}
 		
-		if(query!=null)
-			body['query']=query;
+		search_body["filter"]= {
+			"not" : {
+            	"terms" : { "_id" : blacklist}
+			}
+        };
 		
 		if(justeOne!=null && justeOne)
-			body['size']=1;
+			search_body['size']=1;
 		
 		// Search all incoherence not in blacklist
 		return clientElasticsearch.search({
 			index: index,
 			type: type,
-			body: body
-		});
+			body: search_body
+		})
+		.catch(console.log);
 	});
 }
 
@@ -99,25 +88,18 @@ function getPropositionOfIncoherence(index,type,id,field){
 }
 
 
-function addDataException(index,type,id,expiration){
-	var key=getKeyDataException(index,type,id);
+function addDataException(key,id,expiration){
 	return clientRedisSet(key,id)
 	.then(clientRedisExpire(key,expiration))
 	.catch(console.log);
 }
 
-function getDataException(index,type){
-	return clientRedisKeys(getKeyDataException(index,type,"*"))
+function getDataException(key){
+	return clientRedisKeys(key)
 			.then(getRedisKeys);
 }
 
-
-function getKeyDataException(index,type,id){
-	return "coherence:exception:"+index+":"+type+":"+id;
-}
-
-
-function addSchedulerDataCoherence(index,type,timer,update_function){
+function addSchedulerData(index,type,timer,update_function){
 	setInterval(function(){
 		update_function().then(function(data){
 			updateDataToES(index,type,data);
@@ -136,7 +118,6 @@ function updateDataToES(index,type,data){
 	// on ajoute les update dans le bodyBulk
 	data.forEach(function(d){
 		var id=d.id;
-		delete d['id']; // Delete the id of the body because is the _id of elasticsearch
 		
 		// on sauvegarde toutes les id pour supprimer les id qui n'existe plus
 		allIds.push(id);
@@ -167,7 +148,7 @@ function updateDataToES(index,type,data){
 				}
 			});
 		}
-	}).then(function(){
+	},function(){/* Empty function in case of new index Exception*/}).then(function(){
 		// On lance le groupement d'action (update+delete)
 		return clientElasticsearch.bulk({
 			body: bodyBulk
@@ -182,11 +163,12 @@ function updateDataToES(index,type,data){
 			});
 		}
 		console.log("L'index "+index+" / "+type+" a été mis à jour. (Update : "+nbUpdate+", Delete : "+nbDelete+")");
-	});
+	})
+	.catch(console.log);
 }
 
 exports.searchInInventaire = searchInInventaire;
 exports.getPropositionOfIncoherence = getPropositionOfIncoherence;
 exports.addDataException = addDataException;
 exports.getDataException = getDataException;
-exports.addSchedulerDataCoherence = addSchedulerDataCoherence;
+exports.addSchedulerData = addSchedulerData;

@@ -8,7 +8,8 @@ var multer = require('multer');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var ldap = require('./modules/ldap');
-var inventaireManager = require('./modules/inventaireManager');
+var coherenceManager = require('./modules/coherenceManager');
+var sourceManager = require('./modules/sourceManager');
 
 
 // Recuperation de la variable de config
@@ -94,13 +95,16 @@ app.post("/login", function (req, res) {
 });
 
 
+// Launch source scheduler
+sourceManager.launchSourcesScheduler();
+
 io.sockets.on('connection', function(client) {
 	console.log('connecter');
 	
 	
 	client.on("loadOngletListener",function(onglet){
 		switch(onglet){
-			case "coherence" : inventaireManager.initialize(client,io.sockets);
+			case "coherence" : coherenceManager.initialize(client,io.sockets);
 		}
 	});
 });
