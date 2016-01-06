@@ -81,7 +81,7 @@ function queryInInventaire(index,type,id,search_body,field){
 	
 	body['size']=1;
 	body['fields']=field;
-	
+
 	return clientElasticsearch.search({
 		index: index,
 		type: type,

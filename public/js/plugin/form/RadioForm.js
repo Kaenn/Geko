@@ -4,7 +4,7 @@
 		coherence : null,
 		data:null,
 		answer : "?",
-		proposition : null
+		propositions : null
 	};
 
 
@@ -69,9 +69,10 @@
 				    ),     
 				    that._input
 			    ]);
-				
-				if(that.parametres.proposition!=null && that.parametres.proposition!="" && "value" in that.parametres.proposition){
-					that._input.find("input[value='"+that.parametres.proposition.value+"']").attr("checked",true);
+
+				var proposition=that.parametres.propositions.shift();
+				if(proposition!=null && proposition!="" && "value" in proposition){
+					that._input.find("input[value='"+proposition.value+"']").attr("checked",true);
 				}
 			}else{
 				that.trigger("print-error","Problème lors de la récupération des Autocomplete.");
@@ -91,8 +92,8 @@
 			that.unbind("reload");
 			
 			// Ajout du nouveau event
-			that.on("reload",function(evt,coherence,data,answer,proposition){
-				reload(coherence,data,answer,proposition);
+			that.on("reload",function(evt,coherence,data,answer,propositions){
+				reload(coherence,data,answer,propositions);
 			});
 			
 			
@@ -101,11 +102,11 @@
 		/**
 		 * Recharge le plugin avec de nouveau parametre
 		 */
-		var reload=function(coherence,data,answer,proposition){
+		var reload=function(coherence,data,answer,propositions){
 			that.parametres.coherence=coherence;
 			that.parametres.data=data;
 			that.parametres.answer=answer;
-			that.parametres.proposition=proposition;
+			that.parametres.propositions=propositions;
 			
 			printContent();
 			

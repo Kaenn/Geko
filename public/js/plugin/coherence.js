@@ -58,10 +58,10 @@
 		};
 		
 		var addListener=function(){
-			that.coherence.socket.on('get-next-incoherence',function(coherenceName,id,label,input,proposition){
+			that.coherence.socket.on('get-next-incoherence',function(coherenceName,id,label,input,propositions){
 				// On ne prend en compte l'evenement que si on sur cette coherence
 				if(coherenceName==that.parametres.coherenceClass.coherence)
-					instancierCoherence(id,label,input,proposition)
+					instancierCoherence(id,label,input,propositions)
 			});
 			
 			that.coherence.socket.on('validate-incoherence',function(coherenceName,outil,target){
@@ -126,7 +126,7 @@
 			return that;
 		}
 		
-		var instancierCoherence=function(elemId,elem,input,proposition){
+		var instancierCoherence=function(elemId,elem,input,propositions){
 			if(elemId==null){
 				setStatus('end');
 			}else{
@@ -143,7 +143,7 @@
 					coherence : coherenceName,
 					data : input,
 					answer : answer,
-					proposition : proposition
+					propositions : propositions
 				}));
 				
 				setStatus("work");
