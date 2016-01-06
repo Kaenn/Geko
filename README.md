@@ -1,6 +1,9 @@
 # Geko
 Manage multi-source consistency
 
+# Current-todo
+- finaliser la validation de proposition
+- tester la validaiton mulitple
 
 #Todo
 - Validate lifecycle (delete in elastisearch??, add status for wait validate end??)
