@@ -18,6 +18,7 @@ var params={
 	    {
 			source: "source1",
 			field : "zabbix.hostgroupName",
+			fieldIdentifier : "id",
 			search : {},
 			equalTo: "label"
 	    },

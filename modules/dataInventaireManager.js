@@ -73,13 +73,13 @@ function searchInInventaire(redisKey_regexp,index,type,search_body,blacklist,jus
 	});
 }
 
-function queryInInventaire(index,type,id,search_body,field){
+function queryInInventaire(index,type,filter,search_body,field){
 	var body=extend({}, search_body);
-	body["filter"]= {
-        "terms" : { "_id" : [id]}
-    };
 	
-	body['size']=1;
+	if(filter!=null){
+		body["filter"]= filter;
+	}
+
 	body['fields']=field;
 
 	return clientElasticsearch.search({

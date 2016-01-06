@@ -69,8 +69,6 @@
 		 * Demande au serveur de charger toutes les incoherences
 		 */
 		var askListePropositions=function(){
-			that._listePropositions.empty();
-			
 			wait();
 			
 			// Ajout d'un timeout pour afficher le wait (sinon blqouer par les requetes ajax)
@@ -84,25 +82,25 @@
 		}
 		
 		var loadListePropositions=function(incoherences){
+			that._listePropositions.empty();
 			var incoherencesByProposition={};
 			var incoherencesUnknown=[];
 			
 			$.each(incoherences, function(index,incoherence){
-				if("elem" in incoherence){
-					var proposition="Inconnu";
-					if("proposition" in incoherence){
-						proposition=incoherence.proposition;
+				if("label" in incoherence){
+					if("propositions" in incoherence){
+						var proposition=incoherence.propositions.shift();
 						
 						// On initialise la liste si elle n'existe pas
 						if(! (proposition in incoherencesByProposition) ){
-							incoherencesByProposition[proposition.value]=proposition;
+							incoherencesByProposition[proposition.label]=proposition;
 							
-							incoherencesByProposition[proposition.value]["incoherences"]=[];
+							incoherencesByProposition[proposition.label]["incoherences"]=[];
 						}
 						
-						incoherencesByProposition[proposition.value]["incoherences"].push({"name" : incoherence.label, "id" : incoherence.id});
+						incoherencesByProposition[proposition.label]["incoherences"].push({"label" : incoherence.label, "id" : incoherence.id});
 					}else{
-						incoherencesUnknown.push({"name" : incoherence.elem, "id" : incoherence.elemId});
+						incoherencesUnknown.push({"label" : incoherence.label, "id" : incoherence.id});
 					}
 				}
 			});
@@ -110,7 +108,7 @@
 			var haveProposition=false;
 			$.each(incoherencesByProposition, function(proposition , propositionDesc){
 				haveProposition=true;
-				addListeProposition(propositionDesc.incoherences,propositionDesc.value,propositionDesc.text);
+				addListeProposition(propositionDesc.incoherences,propositionDesc.id,propositionDesc.label);
 			});
 			
 			if(haveProposition){
@@ -159,13 +157,14 @@
 		var addListeProposition=function(incoherences,proposition_value,proposition_text){
 			var listeIncoherence=$("<ul>");
 			
-			function SortByName(a, b){
-				var aName = a.name.toLowerCase();
-				var bName = b.name.toLowerCase(); 
-				return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+			function SortByLabel(a, b){
+				console.log(a);
+				var aLabel = a.label.toLowerCase();
+				var bLabel = b.label.toLowerCase(); 
+				return ((aLabel < bLabel) ? -1 : ((aLabel > bLabel) ? 1 : 0));
 			}
 
-			incoherences.sort(SortByName);
+			incoherences.sort(SortByLabel);
 		
 			$.each(incoherences,function(index,incoherence){
 				var li=$("<li>",{"class":"list-group-item"});
@@ -173,7 +172,7 @@
 					li.append($("<input>",{'class' : "validationCheckbox", 'type' : 'checkbox','name' : proposition_value+'_'+index,"elemId" : incoherence.id,"proposition" : proposition_value}));
 				}
 				
-				li.append($("<span>").text(incoherence.name));
+				li.append($("<span>").text(incoherence.label));
 				
 				listeIncoherence.append(li);
 			});

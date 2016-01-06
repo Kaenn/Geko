@@ -52,7 +52,7 @@ function getIncoherenceAndPropositions(coherence,blacklist){
 		}
 		
 		if(id!=null && id!=""){
-			return getPropositions(coherence,id).then(function(propositions){
+			return getPropositions(coherence,[id]).then(function(propositions){
 				return {
 					id: id,
 					label:label,
@@ -76,31 +76,41 @@ function getIncoherences(coherence,blacklist,justOne){
 	var redisExceptRegexp=getKeyDataException(coherence,"validate","*");
 	return dataInventaireManager.searchInInventaire(redisExceptRegexp,"source",allCoherences[coherence].getParams("source"),search_body,blacklist,justOne).then(function(body){
 		if(justOne)
-			return getFieldsInSearchBody(body,fields[0],fields[1]).shift();
+			return getFieldsInSearchBody(body,[{name:fields[0],label:"id"},{name:fields[1],label:"label"}]).shift();
 		else
-			return getFieldsInSearchBody(body,fields[0],fields[1]);
+			return getFieldsInSearchBody(body,[{name:fields[0],label:"id"},{name:fields[1],label:"label"}]);
 	});
 }
 
-function getPropositions(coherence,id){
+function getPropositions(coherence,ids){
 	var propositions=allCoherences[coherence].getParams("propositions");
 	
 	var promises=[];
 	
 	propositions.forEach(function(proposition){
 		var field=proposition.field;
+		var fieldIdentifier=proposition.fieldIdentifier;
+		
+		var fields=[field,fieldIdentifier];
+		
 		var search_body=proposition.search;
 		var equalTo=proposition.equalTo;
 		var source=proposition.source;
 		
-		promises.push(dataInventaireManager.queryInInventaire("source",source,id,search_body,field).then(function(body){
+		var terms={};
+		terms[fieldIdentifier]=ids;
+		var filter={
+	        "terms" : terms
+	    }
+		
+		promises.push(dataInventaireManager.queryInInventaire("source",source,filter,search_body,fields).then(function(body){
 			var id_field=null;
 			var label_field=null;
 			
 			if(equalTo=="id") id_field=field;
 			if(equalTo=="label") label_field=field;
 
-			return getFieldsInSearchBody(body,id_field,label_field).shift();
+			return getFieldsInSearchBody(body,[{name:fieldIdentifier,label:"_id"},{name:id_field,label:"id"},{name:label_field,label:"label"}]).shift();
 		}));
 	});
 	
@@ -115,7 +125,7 @@ function getAllResponses(coherence){
 	
 	var redisExceptRegexp=getKeyDataException(coherence,"responses","*");
 	return dataInventaireManager.searchInInventaire(redisExceptRegexp,"source",allCoherences[coherence].getParams("responses_source"),search_body,[],false).then(function(body){
-		return getFieldsInSearchBody(body,fields[0],fields[1]);
+		return getFieldsInSearchBody(body,[{name:fields[0],label:"id"},{name:fields[1],label:"label"}]);
 	});
 }
 
@@ -163,9 +173,43 @@ function getNextCoherence(client,coherence,outil,target,blacklist){
 
 
 function getAllIncoherence(client,coherence,outil,target){
-	getIncoherences(coherence,[],false).then(function(allIncoherence){		
+	getIncoherences(coherence,[],false).then(function(allIncoherence){
+		var allIncoherenceId=[];
+		allIncoherence.forEach(function(oneIncoherence){
+			if(typeof oneIncoherence !== "undefined" && "id" in oneIncoherence && oneIncoherence.id!=null && oneIncoherence.id!=""){
+				allIncoherenceId.push(oneIncoherence.id);
+			}
+		});
+		
+		return getPropositions(coherence,allIncoherenceId).then(function(allPropositions){
+			console.log(allPropositions);
+			// on reclasse les propositions par identifier 
+			var propositionsByIdentifier={};
+			allPropositions.forEach(function(oneProposition){
+				if(typeof oneProposition !== "undefined" && "_id" in oneProposition){
+					if(!(oneProposition['_id'] in propositionsByIdentifier)){
+						propositionsByIdentifier[oneProposition['_id']]=[];
+					}
+					
+					propositionsByIdentifier[oneProposition['_id']].push(oneProposition);
+				}
+			});
+			
+			
+			// Search proposition of each incoherence
+			allIncoherence.forEach(function(oneIncoherence){
+				if("id" in oneIncoherence && oneIncoherence['id'] in propositionsByIdentifier){
+					oneIncoherence["propositions"]=propositionsByIdentifier[oneIncoherence['id']];
+				}
+			});
+			
+			return allIncoherence;
+		});
+	}).then(function(allIncoherence){
+		console.log(allIncoherence);
 		client.emit("get-all-incoherence",coherence,outil,target, allIncoherence);
-	});
+	})
+	.catch(console.log);
 }
 
 
@@ -199,7 +243,7 @@ function getKeyDataException(coherence,type,id){
 	return "coherence:exception:"+coherence+":"+type+":"+id;
 }
 
-function getFieldsInSearchBody(body,id_field,label_field){
+function getFieldsInSearchBody(body,mapping_fields){
 	var returnFields=[];
 	
 	if(body.hits.hits.length > 0){
@@ -209,23 +253,18 @@ function getFieldsInSearchBody(body,id_field,label_field){
 				
 				var row={};
 				
-				if(id_field in fields){
-					// Get id field
-					var field_id=fields[id_field];
-					if(Array.isArray(field_id))		
-						row["id"]=field_id[0];
-					else
-						row["id"]=field_id;
-				}
-				
-				if(label_field in fields){
-					// Get label field
-					var field_label=fields[label_field];
-					if(Array.isArray(field_label))		
-						row["label"]=field_label[0];
-					else
-						row["label"]=field_label
-				}
+				mapping_fields.forEach(function(mapping){
+					var field_name=mapping.name;
+					var label=mapping.label;
+					
+					if(field_name in fields){
+						var field_val=fields[field_name];
+						if(Array.isArray(field_val))		
+							row[label]=field_val[0];
+						else
+							row[label]=field_val;
+					}
+				});
 				
 				if(Object.keys(row).length > 0)
 					returnFields.push(row);
@@ -235,7 +274,6 @@ function getFieldsInSearchBody(body,id_field,label_field){
 	
 	return returnFields;
 }
-
 
 /**
  * Initialize client page and their events
