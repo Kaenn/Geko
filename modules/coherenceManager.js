@@ -39,9 +39,7 @@ function refreshNbCoherence(clients,coherence,outil,target){
  * @returns
  */
 function getIncoherenceAndProposition(coherence,blacklist){
-	var index="source";
-	var type=allCoherences[coherence].getParams("source");
-	return getIncoherence(coherence,index,type,blacklist).then(function(incoherence){
+	return getIncoherences(coherence,blacklist,true).then(function(incoherence){
 		var id=null;
 		var label=null;
 		
@@ -52,6 +50,7 @@ function getIncoherenceAndProposition(coherence,blacklist){
 	    	if("label" in incoherence)
 	    		label=incoherence.label;
 		}
+		
 		/*return dataInventaireManager.getPropositionOfIncoherence(index,type,id,"proposition").then(function(proposition){
 			return {
 				id: id,
@@ -62,11 +61,25 @@ function getIncoherenceAndProposition(coherence,blacklist){
 		return {
 			id: id,
 			label:label
-		};
+		}
 	});
 }
 
-function getIncoherence(coherence,index,type,blacklist){
+function getIncoherences(coherence,blacklist,justOne){
+	var fields=allCoherences[coherence].getParams("fields");
+	var search_body=allCoherences[coherence].getParams("search");
+	search_body["fields"]=fields;
+	
+	var redisExceptRegexp=getKeyDataException(coherence,"validate","*");
+	return dataInventaireManager.searchInInventaire(redisExceptRegexp,"source",allCoherences[coherence].getParams("source"),search_body,blacklist,justOne).then(function(body){
+		if(justOne)
+			return getFieldsInSearchBody(body,fields[0],fields[1]).shift();
+		else
+			return getFieldsInSearchBody(body,fields[0],fields[1]);
+	});
+}
+
+function getProposition(coherence){
 	var fields=allCoherences[coherence].getParams("fields");
 	var search_body=allCoherences[coherence].getParams("search");
 	search_body["fields"]=fields;
@@ -90,12 +103,8 @@ function getAllResponses(coherence){
 
 function getNextCoherence(client,coherence,outil,target,blacklist){
 	var promises = [
-	    getIncoherenceAndProposition(coherence,blacklist).then(function(r){
-	    	return r;
-	    }),
-	    getAllResponses(coherence).then(function(r){
-	    	return r;
-	    })
+	    getIncoherenceAndProposition(coherence,blacklist),
+	    getAllResponses(coherence)
 	];
 
     return Q.all(promises).then(function(response){
@@ -129,14 +138,7 @@ function getNextCoherence(client,coherence,outil,target,blacklist){
 
 
 function getAllIncoherence(client,coherence,outil,target){
-	var fields=allCoherences[coherence].getParams("fields");
-	var search_body=allCoherences[coherence].getParams("search");
-	search_body["fields"]=fields;
-	
-	var redisExceptRegexp=getKeyDataException(coherence,"validate","*");
-	dataInventaireManager.searchInInventaire(redisExceptRegexp,'source',allCoherences[coherence].getParams("source"),search_body,[],false).then(function(body){
-		var allIncoherence=getFieldsInSearchBody(body,fields[0],fields[1]);
-		
+	getIncoherences(coherence,[],false).then(function(allIncoherence){		
 		client.emit("get-all-incoherence",coherence,outil,target, allIncoherence);
 	});
 }
