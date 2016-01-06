@@ -17,8 +17,9 @@ var params={
 	propositions: 
 	    {
 			source: "source1",
-			fields : ["zabbix.hostgroupName"],
-			equaldTo: "label"
+			field : "zabbix.hostgroupName",
+			search : {},
+			equalTo: "label"
 	    }
 	
 }

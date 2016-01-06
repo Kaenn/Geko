@@ -51,16 +51,19 @@ function getIncoherenceAndProposition(coherence,blacklist){
 	    		label=incoherence.label;
 		}
 		
-		/*return dataInventaireManager.getPropositionOfIncoherence(index,type,id,"proposition").then(function(proposition){
+		if(id!=null && id!=""){
+			return getProposition(coherence,id).then(function(proposition){
+				return {
+					id: id,
+					label:label,
+					proposition: proposition
+				}
+			});
+		}else{
 			return {
 				id: id,
-				label:label,
-				proposition: proposition
+				label:label
 			}
-		});*/
-		return {
-			id: id,
-			label:label
 		}
 	});
 }
@@ -79,14 +82,22 @@ function getIncoherences(coherence,blacklist,justOne){
 	});
 }
 
-function getProposition(coherence){
-	var fields=allCoherences[coherence].getParams("fields");
-	var search_body=allCoherences[coherence].getParams("search");
-	search_body["fields"]=fields;
+function getProposition(coherence,id){
+	var propositions=allCoherences[coherence].getParams("propositions");
 	
-	var redisExceptRegexp=getKeyDataException(coherence,"validate","*");
-	return dataInventaireManager.searchInInventaire(redisExceptRegexp,"source",allCoherences[coherence].getParams("source"),search_body,blacklist,true).then(function(body){
-		return getFieldsInSearchBody(body,fields[0],fields[1]).shift();
+	var field=propositions.field;
+	var search_body=propositions.search;
+	var equalTo=propositions.equalTo;
+	var source=propositions.source;
+	
+	return dataInventaireManager.queryInInventaire("source",source,id,search_body,field).then(function(body){
+		var id_field=null;
+		var label_field=null;
+		
+		if(equalTo=="id") id_field=field;
+		if(equalTo=="label") label_field=field;
+
+		return getFieldsInSearchBody(body,id_field,label_field).shift();
 	});
 }
 
@@ -124,7 +135,9 @@ function getNextCoherence(client,coherence,outil,target,blacklist){
 	    	
 	    	if("proposition" in incoherence){
 		    	input.forEach(function(oneInput){
-		    		if(oneInput.label==incoherence.proposition){
+		    		if(incoherence.proposition.label !=null && oneInput.label==incoherence.proposition.label){
+		    			proposition=oneInput;
+		    		}else if(incoherence.proposition.id !=null && oneInput.id==incoherence.proposition.id){
 		    			proposition=oneInput;
 		    		}
 		    	});
@@ -182,30 +195,35 @@ function getFieldsInSearchBody(body,id_field,label_field){
 			if("fields" in hit){
 				var fields=hit['fields'];
 				
-				if(id_field in fields && label_field in fields){
-					var row={};
+				var row={};
+				
+				if(id_field in fields){
 					// Get id field
 					var field_id=fields[id_field];
 					if(Array.isArray(field_id))		
 						row["id"]=field_id[0];
 					else
 						row["id"]=field_id;
-					
+				}
+				
+				if(label_field in fields){
 					// Get label field
 					var field_label=fields[label_field];
 					if(Array.isArray(field_label))		
 						row["label"]=field_label[0];
 					else
 						row["label"]=field_label
-					
-					returnFields.push(row);
 				}
+				
+				if(Object.keys(row).length > 0)
+					returnFields.push(row);
 			}
 		});
 	}
 	
 	return returnFields;
 }
+
 
 /**
  * Initialize client page and their events

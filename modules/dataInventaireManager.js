@@ -73,18 +73,19 @@ function searchInInventaire(redisKey_regexp,index,type,search_body,blacklist,jus
 	});
 }
 
-function getPropositionOfIncoherence(index,type,id,field){
-	// Search all incoherence not in blacklist
-	return clientElasticsearch.get({
+function queryInInventaire(index,type,id,search_body,field){
+	var body=extend({}, search_body);
+	body["filter"]= {
+        "terms" : { "_id" : [id]}
+    };
+	
+	body['size']=1;
+	body['fields']=field;
+	
+	return clientElasticsearch.search({
 		index: index,
 		type: type,
-		id: id,
-		fields: [field]
-	}).then(function(res){
-		if("fields" in res && field in res['fields']){
-			return res['fields'][field].shift();
-		}
-		return null;
+		body: body
 	});
 }
 
@@ -169,7 +170,7 @@ function updateDataToES(index,type,data){
 }
 
 exports.searchInInventaire = searchInInventaire;
-exports.getPropositionOfIncoherence = getPropositionOfIncoherence;
+exports.queryInInventaire = queryInInventaire;
 exports.addDataException = addDataException;
 exports.getDataException = getDataException;
 exports.addSchedulerData = addSchedulerData;
