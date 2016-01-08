@@ -15,7 +15,7 @@ function launchSourcesScheduler(){
 	console.log("Launch all sources Scheduler :");
 	sourcesName.forEach(function(name){
 		// get source class
-		var sourcesClass=require("../sources/"+name);
+		var sourcesClass=require("../../sources/"+name);
 		allSources[name]=sourcesClass;
 		
 		// Add getDataFromSource to scheduler
