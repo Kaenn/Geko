@@ -2,8 +2,11 @@
 Manage multi-source consistency
 
 # Current-todo
+- get next ne retourne pas propositions
+
 - finaliser la validation de proposition
 - tester la validaiton mulitple
+- revoir les endroit de refresh
 
 #Todo
 - Validate lifecycle (delete in elastisearch??, add status for wait validate end??)

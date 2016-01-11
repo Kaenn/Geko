@@ -73,7 +73,7 @@
 				
 				var proposition=that.parametres.propositions.shift();
 				if(proposition!=null && proposition!="" && "label" in proposition){
-					that._input.val(proposition.label);
+					that._input.val(formatageName(proposition.label,proposition.id));
 				}
 			}else{
 				that.trigger("print-error","Problème lors de la récupération des Autocomplete.");

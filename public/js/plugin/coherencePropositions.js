@@ -62,10 +62,10 @@
 			that.parametres.coherenceClass.socket.on('get-all-incoherence',getAllIncoherence);
 		}
 		
-		var getAllIncoherence=function(coherenceName,outil,target,allIncoherence){
+		var getAllIncoherence=function(coherenceName,outil,target,allIncoherences,responses){
 			// On ne prend en compte l'evenement que si on sur cette coherence
 			if(coherenceName==that.parametres.coherenceClass.coherence)
-				loadListePropositions(allIncoherence);
+				loadListePropositions(allIncoherences);
 		};
 		
 		/**
@@ -96,7 +96,7 @@
 						
 						if(typeof proposition !== "undefined"){
 							// On initialise la liste si elle n'existe pas
-							if(! (proposition.label in incoherencesByProposition) ){							
+							if(! (proposition.label in incoherencesByProposition) ){
 								incoherencesByProposition[proposition.label]=proposition;
 
 								incoherencesByProposition[proposition.label]["incoherences"]=[];
@@ -117,6 +117,8 @@
 			});
 			
 			if(haveProposition){
+				var responses=[];
+				
 				that._listePropositions.append($("<button>",{'type':"button", 'class':"btn btn-default"})
 					.text("Valider les propositions selectionné")
 				    .on("click",function(){
@@ -130,25 +132,21 @@
 									
 									if(elemId!=null && elemId > 0 && proposition!=null && proposition!=""){
 										var checkbox=$(this);
-										that.coherence.valider(elemId,[proposition],function(isValidate){
-											if(isValidate){
-												var theCheckbox=checkbox;
-												// On cache la ligne
-												theCheckbox.parent().hide();
-												
-												// On cache les listes de propositions qui n'ont plus de ligne
-												that._listePropositions.find("ul").each(function(){
-													if($(this).find("li:visible").length <= 0){
-														$(this).parent().hide();
-													}
-												});
-											}
+										
+										responses.push({
+											id: elemId,
+											reponses: [proposition]
 										});
 									}
 								}
 							})
 							.attr('disabled',false);
-						that.trigger("refresh");
+						
+						if(responses.length > 0){
+							that.coherence.validerMulti(responses);
+							that.trigger("refresh");
+						}
+						
 						$(this).attr('disabled',false);
 				    })
 				);
@@ -173,7 +171,7 @@
 			$.each(incoherences,function(index,incoherence){
 				var li=$("<li>",{"class":"list-group-item"});
 				if(proposition_value!="unknown"){
-					li.append($("<input>",{'class' : "validationCheckbox", 'type' : 'checkbox','name' : proposition_value+'_'+index,"elemId" : incoherence.id,"proposition" : proposition_value}));
+					li.append($("<input>",{'class' : "validationCheckbox", 'type' : 'checkbox','name' : proposition_value+'_'+index,"elemId" : incoherence.id,"propositions" : proposition_value}));
 				}
 				
 				li.append($("<span>").text(incoherence.label));

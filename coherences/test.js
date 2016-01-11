@@ -25,6 +25,7 @@ var params={
 	    {
 			source: "source1",
 			field : "cacti.hostgroupName",
+			fieldIdentifier : "id",
 			search : {},
 			equalTo: "label"
 	    }
@@ -42,7 +43,7 @@ function getParams(name){
 
 
 function resolve(id,response){
-	/*var options = {
+	var options = {
 		host: 'localhost',
 		path: '/workspace/Geko-remoteControle/resolve.php?id='+id+"&response="+response,
 		method: 'GET'
@@ -61,7 +62,7 @@ function resolve(id,response){
 	  console.log('problem with request: ' + e.message);
 	});
 	
-	req.end();*/
+	req.end();
 }
 
 // Params

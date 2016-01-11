@@ -83,10 +83,10 @@
 			that.parametres.coherenceClass.socket.on('get-all-incoherence',getAllIncoherence);
 		}
 		
-		var getAllIncoherence=function(coherenceName,outil,target,allIncoherence){
+		var getAllIncoherence=function(coherenceName,outil,target,allIncoherences,responses){
 			// On ne prend en compte l'evenement que si on sur cette coherence
 			if(coherenceName==that.parametres.coherenceClass.coherence){
-				addListe(allIncoherence);
+				addListe(allIncoherences);
 			
 				work();
 			}
