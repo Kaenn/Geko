@@ -87,6 +87,9 @@ app.param("onglet",function(req, res, next, onglet){
 });
 
 app.get('/onglet/:onglet', function (req, res, next) {});
+app.get('/onglet', function (req, res, next) {
+	res.redirect("/onglet/"+defaultOnglet);
+});
 
 
 

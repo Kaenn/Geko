@@ -19,8 +19,8 @@
 
 {% block siteName %}Geko{% endblock %}
 
-{% block onglet %}coherence{% endblock %}
-{% block title %}Geko - Cohérence{% endblock %}
+{% block onglet %}proposition{% endblock %}
+{% block title %}Geko - Proposition{% endblock %}
 
 {% block content %}
 	<script>
@@ -28,25 +28,6 @@
 			var socket = io.connect('{{ server }}');
 			
 			socket.emit("loadOngletListener","coherence");
-			
-			$("#contener").coherenceContener({
-				"content" : {
-			    	"test" : {
-				        "outil" : "default",
-				        "target" : "all",
-				        "label" : "Teste coherence",
-				        "inputName" : "input_name",
-				        "answer" : "Quel est la résolution de l'élement <$label$>?",
-				        "answerMultiple" : "Quel est la résolution des élements?",
-				        "pluginInput" : "OneInputForm" ,
-				        "plugins" : [
-							"propositions",
-							"resolutionsMultiple"
-						]
-			        }
-				},
-			    "socket" : socket
-		    });
 		});
 	</script>
 	<div id="contener"></div>
