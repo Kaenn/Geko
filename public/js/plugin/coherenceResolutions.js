@@ -35,6 +35,7 @@
 
 	$.coherenceResolutions=function(that,methodOrOptions){
 		that.coherence=null;
+		that.responses=null;
 		
 		that.coherenceCheck=[];
 		
@@ -49,6 +50,7 @@
 			
 			that.addClass("listIncoherence");
 			
+			that._error=$("<div>",{"class" : "alert alert-danger"});
 			that._spinner=$("<span>",{"class":"glyphicon glyphicon-refresh glyphicon-refresh-animate"}).hide();
 			that._listeResolutions=$("<div>");
 			
@@ -67,6 +69,7 @@
 			});
 			
 			that.append([
+			    that._error,
 			    that._spinner,
 			    that._button,
 			    that._listeResolutions,
@@ -84,6 +87,7 @@
 		}
 		
 		var getAllIncoherence=function(coherenceName,outil,target,allIncoherences,responses){
+			that.responses=responses;
 			// On ne prend en compte l'evenement que si on sur cette coherence
 			if(coherenceName==that.parametres.coherenceClass.coherence){
 				addListe(allIncoherences);
@@ -101,29 +105,28 @@
 					that.coherenceCheck.push($(this).attr('elemid'));
 				});
 				
-				that._modalValidation.modalResolutions('show');
+				that._modalValidation.modalResolutions('show',that.responses);
 			}else{
-				console.log("ToDo : message d'erreur si aucun check");
+				printError("Vous devez sélectionner au moins une incoherence.");
 			}
 		}
 		
-		var valider=function(reponses){
+		var valider=function(responses){
 			wait();
 			
-			var nbToValidate=0;
-			var nbValidate=0;
+			var allResponses=[];
 			$.each(that.coherenceCheck,function(index,elemid){
-				nbToValidate++;
-				that.coherence.valider(elemid,reponses,function(){
-					nbValidate++;
-					
-					if(nbToValidate==nbValidate){
-						loadListePropositions();
-						
-						that.trigger('refresh');
-					}
+				allResponses.push({
+					id: elemid,
+					responses: responses
 				});
 			});
+			
+			if(responses.length > 0){
+				that.coherence.validerMulti(allResponses);
+			}else{
+				printError("Erreur lors de la validation.");
+			}
 		}
 		
 		var loadListePropositions=function(){
@@ -165,19 +168,34 @@
 		
 		var setStatus=function(status){
 			switch(status){
-				case "wait" : 	that._spinner.show();
+				case "wait" : 	that._error.hide();
+								that._spinner.show();
 								that._button.hide();
 								that._listeResolutions.hide();
 								break;
-				case "work" : 	that._spinner.hide();
+				case "work" : 	that._error.hide();
+								that._spinner.hide();
 								that._button.show();
 								that._listeResolutions.show();
 				    			break;
-				default : 	that._spinner.hide();
+				case "error" : 	that._error.show();
+								that._spinner.hide();
+								that._button.show();
+								that._listeResolutions.show();
+				    			break;
+				default : 	that._error.show();
+							that._spinner.hide();
 							that._button.show();
 							that._listeResolutions.show();
     		    			break;
 			}
+		}
+		
+		var printError=function(txt){
+			that._error.text(txt);
+			setStatus("error");
+			
+			return that;
 		}
 		
 		var wait=function(){

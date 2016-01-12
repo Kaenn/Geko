@@ -70,9 +70,11 @@
 				    that._input
 			    ]);
 
-				var proposition=that.parametres.propositions.shift();
-				if(proposition!=null && proposition!="" && "value" in proposition){
-					that._input.find("input[value='"+proposition.value+"']").attr("checked",true);
+				if(that.parametres.propositions!=null){
+					var proposition=that.parametres.propositions.shift();
+					if(proposition!=null && proposition!="" && "value" in proposition){
+						that._input.find("input[value='"+proposition.value+"']").attr("checked",true);
+					}
 				}
 			}else{
 				that.trigger("print-error","Problème lors de la récupération des Autocomplete.");

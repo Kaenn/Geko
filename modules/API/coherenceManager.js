@@ -32,41 +32,6 @@ function getNbCoherence(coherence){
 	.catch(console.log);
 }
 
-/** 
- * Search incoherence and get proposition
- * @param coherence
- * @param blacklist
- * @returns
- */
-/*function getIncoherenceAndPropositions(coherence,blacklist){
-	return getIncoherences(coherence,blacklist,true).then(function(incoherence){
-		var id=null;
-		var label=null;
-		
-		if(typeof incoherence !== "undefined"){
-			if("id" in incoherence)
-	    		id=incoherence.id;
-	    	
-	    	if("label" in incoherence)
-	    		label=incoherence.label;
-		}
-		
-		if(id!=null && id!=""){
-			return getPropositions(coherence,[id]).then(function(propositions){
-				return {
-					id: id,
-					label:label,
-					propositions: propositions
-				}
-			});
-		}else{
-			return {
-				id: id,
-				label:label
-			}
-		}
-	});
-}*/
 
 /** 
  * Search incoherence and get proposition

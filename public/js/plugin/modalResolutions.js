@@ -1,7 +1,8 @@
 (function($){
 	// Parametre par defaut
 	var defauts={
-		"coherenceClass" : null
+		"coherenceClass" : null,
+		"responses": null
 	};
 
 
@@ -118,34 +119,33 @@
 			return that;
 		}
 		
-		var loadBody=function(){
+		var loadBody=function(responses){
 			wait();
 			
 			that._body.empty();
 			
 			var coherenceName=that.coherence.coherence;
-			that.coherence.getAllResponses(function(responses){
-				var answer=that.coherence.getAnswerMultiple();
-				that._inputPlugin=$("<div>");
-				
-				that._body.append(
-					that._inputPlugin
-				);
-				
-				that._inputPlugin[that.coherence.pluginInput]({
-					coherence : coherenceName,
-					data : responses,
-					answer : answer
-				});
-				
-				work();
+			
+			var answer=that.coherence.getAnswerMultiple();
+			that._inputPlugin=$("<div>");
+			
+			that._body.append(
+				that._inputPlugin
+			);
+			
+			that._inputPlugin[that.coherence.pluginInput]({
+				coherence : coherenceName,
+				data : responses,
+				answer : answer
 			});
+			
+			work();
 		}
 		
 		
 		var valider=function(){
 			var reponses=that._inputPlugin[that.coherence.pluginInput]("getResult");
-			
+			console.log(reponses);
 			var haveGoodReponse=false;
 
 			if(reponses.length > 0){
@@ -167,19 +167,18 @@
 		}
 		
 		
-		var show=function(){
+		var show=function(responses){
 			that.modal('show');
-			loadBody();
+			loadBody(responses);
 		}
 		
 		
 		var hide=function(){
 			that.modal('hide');
-			loadBody();
 		}
 		
 		var methods={
-			"show" : function(){ return show(); },
+			"show" : function(responses){ return show(responses); },
 			"hide" : function(){ return hide(); }
 		};
 		
