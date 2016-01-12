@@ -58,11 +58,12 @@
 		};
 		
 		var addListener=function(){
-			that.parametres.coherenceClass.socket.removeListener('get-all-incoherence',getAllIncoherence);
-			that.parametres.coherenceClass.socket.on('get-all-incoherence',getAllIncoherence);
+			that.parametres.coherenceClass.socket.removeAllListeners('get-all-incoherence-propositions');
+			that.parametres.coherenceClass.socket.on('get-all-incoherence-propositions',getAllIncoherence);
 		}
 		
 		var getAllIncoherence=function(coherenceName,outil,target,allIncoherences,responses){
+			console.log(allIncoherences);
 			// On ne prend en compte l'evenement que si on sur cette coherence
 			if(coherenceName==that.parametres.coherenceClass.coherence)
 				loadListePropositions(allIncoherences);

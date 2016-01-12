@@ -79,8 +79,8 @@
 		};
 		
 		var addListener=function(){
-			that.parametres.coherenceClass.socket.removeListener('get-all-incoherence',getAllIncoherence);
-			that.parametres.coherenceClass.socket.on('get-all-incoherence',getAllIncoherence);
+			that.parametres.coherenceClass.socket.removeAllListeners('get-all-incoherence-resolutions');
+			that.parametres.coherenceClass.socket.on('get-all-incoherence-resolutions',getAllIncoherence);
 		}
 		
 		var getAllIncoherence=function(coherenceName,outil,target,allIncoherences,responses){

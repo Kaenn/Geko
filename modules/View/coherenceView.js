@@ -33,7 +33,8 @@ function getAllIncoherence(client,coherence,outil,target){
 				responses=allIncoherencesWithResponses["responses"];
 		}
 		
-		client.emit("get-all-incoherence",coherence,outil,target, allIncoherences,responses);
+		client.emit("get-all-incoherence-propositions",coherence,outil,target, allIncoherences,responses);
+		client.emit("get-all-incoherence-resolutions",coherence,outil,target, allIncoherences,responses);
 	});
 }
 
