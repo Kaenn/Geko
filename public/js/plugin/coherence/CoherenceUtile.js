@@ -37,11 +37,11 @@ CoherenceUtile.prototype.getNext=function(blacklist){
 	this.socket.emit("get-next-incoherence",this.coherence, this.outil, this.target,blacklist);
 }
 
-CoherenceUtile.prototype.valider=function(id,responses,onglet){
+CoherenceUtile.prototype.valider=function(id,responses){
 	this.socket.emit("validate-incoherence", this.coherence, this.outil, this.target, id, responses);
 }
 
-CoherenceUtile.prototype.validerMulti=function(responses,onglet){
+CoherenceUtile.prototype.validerMulti=function(responses){
 	this.socket.emit("validate-multiple-incoherence", this.coherence, this.outil, this.target, responses);
 }
 

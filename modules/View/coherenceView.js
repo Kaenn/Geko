@@ -33,8 +33,9 @@ function getAllIncoherence(client,coherence,outil,target){
 				responses=allIncoherencesWithResponses["responses"];
 		}
 		
-		client.emit("get-all-incoherence-propositions",coherence,outil,target, allIncoherences,responses);
+		client.emit("get-all-incoherence-propositions",coherence,outil,target, allIncoherences);
 		client.emit("get-all-incoherence-resolutions",coherence,outil,target, allIncoherences,responses);
+		client.emit("refresh-nb-incoherence",coherence,outil,target, allIncoherences.length);
 	});
 }
 
@@ -46,8 +47,8 @@ function validateIncoherence(client,coherence,outil,target,id,responses){
 }
 
 function validateMultipleIncoherence(client,coherence,outil,target,responses){
-	coherenceManager.validateMultipleIncoherence(coherence,responses).then(function(allIncoherence){
-		client.emit("validate-multiple-incoherence",coherence,outil,target);
+	coherenceManager.validateMultipleIncoherence(coherence,responses).then(function(){
+		getAllIncoherence(client,coherence,outil,target);
 	});
 }
 
@@ -75,9 +76,9 @@ var initialize=function(client,clients){
 		validateIncoherence(client,coherence,outil,target,id,responses);
 	});
 	
-	client.on('validate-multiple-incoherence', function(coherence,outil,target,response) {
+	client.on('validate-multiple-incoherence', function(coherence,outil,target,responses) {
 		// Validate incoherence
-		validateMultipleIncoherence(client,coherence,outil,target,response);
+		validateMultipleIncoherence(client,coherence,outil,target,responses);
 	});
 }
 

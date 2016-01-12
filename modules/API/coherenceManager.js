@@ -259,7 +259,6 @@ function validateMultipleIncoherence(coherence,responses){
 }
 
 function validateIncoherence(coherence,id,responses){
-	console.log("resolve",id,responses);
 	var coherenceClass=allCoherences[coherence];
 	// launch resolve action
 	coherenceClass.resolve(id,responses);

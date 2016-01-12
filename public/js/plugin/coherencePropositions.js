@@ -44,10 +44,12 @@
 			
 			that.addClass("listIncoherence");
 			
+			that._error=$("<div>",{"class" : "alert alert-danger"});
 			that._spinner=$("<span>",{"class":"glyphicon glyphicon-refresh glyphicon-refresh-animate"}).hide();
 			that._listePropositions=$("<div>");
 
 			that.append([
+			    that._error,
 			    that._spinner,
 			    that._listePropositions
 			]);
@@ -62,8 +64,7 @@
 			that.parametres.coherenceClass.socket.on('get-all-incoherence-propositions',getAllIncoherence);
 		}
 		
-		var getAllIncoherence=function(coherenceName,outil,target,allIncoherences,responses){
-			console.log(allIncoherences);
+		var getAllIncoherence=function(coherenceName,outil,target,allIncoherences){
 			// On ne prend en compte l'evenement que si on sur cette coherence
 			if(coherenceName==that.parametres.coherenceClass.coherence)
 				loadListePropositions(allIncoherences);
@@ -123,7 +124,8 @@
 				that._listePropositions.append($("<button>",{'type':"button", 'class':"btn btn-default"})
 					.text("Valider les propositions selectionné")
 				    .on("click",function(){
-						$(this).attr('disabled',true);
+				    	wait();
+				    	$(this).attr('disabled',true);
 						that._listePropositions.find('.validationCheckbox')
 							.attr('disabled',true)
 							.each(function(){
@@ -136,7 +138,7 @@
 										
 										responses.push({
 											id: elemId,
-											reponses: [proposition]
+											responses: [proposition]
 										});
 									}
 								}
@@ -145,7 +147,8 @@
 						
 						if(responses.length > 0){
 							that.coherence.validerMulti(responses);
-							that.trigger("refresh");
+						}else{
+							printError("Merci de sélectionner au moins une proposition.");
 						}
 						
 						$(this).attr('disabled',false);
@@ -172,7 +175,7 @@
 			$.each(incoherences,function(index,incoherence){
 				var li=$("<li>",{"class":"list-group-item"});
 				if(proposition_value!="unknown"){
-					li.append($("<input>",{'class' : "validationCheckbox", 'type' : 'checkbox','name' : proposition_value+'_'+index,"elemId" : incoherence.id,"propositions" : proposition_value}));
+					li.append($("<input>",{'class' : "validationCheckbox", 'type' : 'checkbox','name' : proposition_value+'_'+index,"elemId" : incoherence.id,"proposition" : proposition_value}));
 				}
 				
 				li.append($("<span>").text(incoherence.label));
@@ -195,16 +198,30 @@
 		
 		var setStatus=function(status){
 			switch(status){
-				case "wait" : 	that._spinner.show();
+				case "wait" : 	that._error.hide();
+								that._spinner.show();
 								that._listePropositions.hide();
 								break;
 				case "work" : 	that._spinner.hide();
+								that._error.hide();
+								that._listePropositions.show();
+				    			break;
+				case "error" : 	that._spinner.hide();
+								that._error.show();
 								that._listePropositions.show();
 				    			break;
 				default : 	that._spinner.hide();
+							that._error.show();
 							that._listePropositions.show();
     		    			break;
 			}
+		}
+		
+		var printError=function(txt){
+			that._error.text(txt);
+			setStatus("error");
+			
+			return that;
 		}
 		
 		var wait=function(){
