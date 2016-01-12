@@ -2,15 +2,9 @@
 Manage multi-source consistency
 
 # Current-todo
-- finaliser la validation de proposition
-- tester la validaiton mulitple
-- revoir les endroit de refresh
+- add stat dynamic
 
 #Todo
-- Validate lifecycle (delete in elastisearch??, add status for wait validate end??)
-- Add input manage (reddis?)
-- Add proposition manage (reddis?)
-- Fix proposition, resolutionMultiple
 - Add admin interface
 - Add real log
 - Try kibbana
