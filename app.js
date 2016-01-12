@@ -53,15 +53,42 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 server.listen(config.port);
 
-app.get('/', function (req, res, next) {
+
+/*********************************************************************/
+/**************************** ROUTER *********************************/
+/*********************************************************************/
+
+var defaultOnglet='coherence';
+
+var renderOnglet=function(req,res,onglet){
 	req.session.username="dev";
 	// On verifie si le user c'est déjà connecté
 	if (req.session.username) {
-		res.render('coherence',{server:config.web.url,username:req.session.username,siteName:config.siteName});
+		res.render("onglet/"+onglet,{server:config.web.url,username:req.session.username,siteName:config.siteName}, function(err, html) {
+			if(!err) console.log("t1");
+			else console.log("t2",err);
+			if(!err)
+				res.send(html);
+			else
+				res.render("onglet/"+defaultOnglet,{server:config.web.url,username:req.session.username,siteName:config.siteName});
+		});
 	} else {
 		res.redirect("login");
 	}
+}
+
+app.get('/', function (req, res, next) {
+	res.redirect("/onglet/"+defaultOnglet);
 });
+
+
+app.param("onglet",function(req, res, next, onglet){
+	renderOnglet(req, res, onglet);
+});
+
+app.get('/onglet/:onglet', function (req, res, next) {});
+
+
 
 // Affichage de la page de login
 app.get("/login", function (req, res) {
