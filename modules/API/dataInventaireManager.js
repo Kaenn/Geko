@@ -40,13 +40,138 @@ function getRedisKeys(keys){
 	 
     return Q.all(promises);
 }
+function test2(body,mapping_fields){
+	var returnFields=[];
+	
+	if(body.hits.hits.length > 0){
+		body.hits.hits.forEach(function(hit){
+			if("fields" in hit){
+				var fields=hit['fields'];
+				
+				var row={};
+				
+				mapping_fields.forEach(function(mapping){
+					var field_name=mapping.name;
+					var label=mapping.label;
+					var isArray=false;
+					if("isArray" in mapping)
+						isArray=mapping.isArray;
+					
+					if(field_name in fields){
+						var field_val=fields[field_name];
+						if(Array.isArray(field_val) && !isArray)		
+							row[label]=field_val[0];
+						else
+							row[label]=field_val;
+					}
+				});
+				
+				if(Object.keys(row).length > 0)
+					returnFields.push(row);
+			}
+		});
+	}
+	
+	return returnFields;
+}
 
+var test3=function(label_identifier,list){
+	var listByIdentifier={};
+	
+	list.forEach(function(row){
+		if(typeof row !== "undefined" && label_identifier in row){
+			if(!(row[label_identifier] in listByIdentifier)){
+				listByIdentifier[row[label_identifier]]=[];
+			}
+			
+			listByIdentifier[row[label_identifier]]=row;
+		}
+	});
+	
+	return listByIdentifier;
+}
+
+var test=function(){
+	var promises=[];
+	
+	promises.push(
+		clientElasticsearch.search({
+			index: "source",
+			type: "sourceIP1",
+			body: {
+				query : {
+					"match_all" :{}
+				},
+				fields: ["hostname","ips.ip"]
+			}
+		}).then(function(body){
+			return test3("id",test2(body,[{name:"hostname",label:"id"},{name:"ips.ip",label:"toCompare",isArray:true}]))
+		}).catch(console.log)
+	);
+
+	promises.push(
+		clientElasticsearch.search({
+			index: "source",
+			type: "sourceIP2",
+			body: {
+				query : {
+					"match_all" :{}
+				},
+				fields: ["hostname","ips.ip"]
+			}
+		}).then(function(body){
+			return test3("id",test2(body,[{name:"hostname",label:"id"},{name:"hostname",label:"label"},{name:"ips.ip",label:"toCompare",isArray:true}]))
+		})
+	);
+	
+	Q.all(promises).then(function(searchs){
+		var compareElem={};
+		
+		// Check if isIn is in base
+		var arrayBase=searchs[0];
+		var arrayIsIn=searchs[1];
+		
+		for(id in arrayIsIn){
+			var elemIsIn=arrayIsIn[id].toCompare;
+			if(id in arrayBase){
+				var elemBase=arrayBase[id].toCompare;
+				var responses=[];
+				
+				elemIsIn.forEach(function(elemI){
+					var isIn=false;
+					elemBase.forEach(function(elemB){
+						if(elemI==elemB) isIn=true;
+					});
+					
+					if(!isIn) responses.push(elemI);
+				});
+				
+				if(responses.length > 0){
+					compareElem[id]={
+						"id": id,
+						"label": arrayIsIn[id].label,
+						"responses": responses
+					};
+				}
+			}else{
+				compareElem[id]={
+					"id": id,
+					"label": arrayIsIn[id].label,
+					"responses": elemIsIn
+				};
+			}
+		}
+		
+		console.log("tt",compareElem);
+	});
+}
 
 /**
  * Search in Elastisearch with extend blacklist in redis
  * @returns
  */
 function searchInInventaire(redisKey_regexp,index,type,search_body,blacklist,justeOne){
+	test();
 	// Get all validate in progress
 	return getDataException(redisKey_regexp)
 	.then(function(dataException){

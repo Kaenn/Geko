@@ -9,7 +9,7 @@ var dataInventaireManager = require('./dataInventaireManager');
 
 // Enregistrement de toutes les sources
 var allSources=[];
-var sourcesName=['source1','sourceResponses1'];
+var sourcesName=['source1','sourceResponses1','sourceIP1','sourceIP2','sourceIP3'];
 
 function launchSourcesScheduler(){
 	console.log("Launch all sources Scheduler :");

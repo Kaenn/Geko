@@ -9,6 +9,7 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var ldap = require('./modules/ldap');
 var coherenceView = require('./modules/View/coherenceView');
+var propositionView = require('./modules/View/propositionView');
 var sourceManager = require('./modules/API/sourceManager');
 
 
@@ -65,8 +66,6 @@ var renderOnglet=function(req,res,onglet){
 	// On verifie si le user c'est déjà connecté
 	if (req.session.username) {
 		res.render("onglet/"+onglet,{server:config.web.url,username:req.session.username,siteName:config.siteName}, function(err, html) {
-			if(!err) console.log("t1");
-			else console.log("t2",err);
 			if(!err)
 				res.send(html);
 			else
@@ -134,7 +133,8 @@ io.sockets.on('connection', function(client) {
 	
 	client.on("loadOngletListener",function(onglet){
 		switch(onglet){
-			case "coherence" : coherenceView.initialize(client,io.sockets);
+			case "coherence" : coherenceView.initialize(client,io.sockets); break;
+			case "proposition" : propositionView.initialize(client,io.sockets); break;
 		}
 	});
 });

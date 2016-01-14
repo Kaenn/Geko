@@ -6,44 +6,44 @@
 	};
 
 
-	$.fn.coherenceContener=function(methodOrOptions){
+	$.fn.propositionContener=function(methodOrOptions){
 		var methodArgs=arguments;
 		this.each(function(){
-			var coherenceContener=$(this).data('coherenceContener');
-			if (typeof coherenceContener === "undefined") {
+			var propositionContener=$(this).data('propositionContener');
+			if (typeof propositionContener === "undefined") {
 				// On initialise la classe
 				var options=methodOrOptions;
 			
-				coherenceContener=$.coherenceContener($(this),options);
+				propositionContener=$.propositionContener($(this),options);
 			}else{
 				// On applique une method public sur la classe
 				var method=methodOrOptions;
 				
-				coherenceContener.doPublicMethod(method,methodArgs);
+				propositionContener.doPublicMethod(method,methodArgs);
 			}
 			
-			$(this).data('coherenceContener',coherenceContener);
+			$(this).data('propositionContener',propositionContener);
 		});
 		
 		return this;
 	};
 
 
-	$.coherenceContener=function(that,methodOrOptions){
-		that.coherenceName=null;
+	$.propositionContener=function(that,methodOrOptions){
+		that.propositionName=null;
 		
-		that.coherenceClass=null;
+		that.propositionClass=null;
 		
-		that.tabLoadNbincoherence=[];
+		that.tabLoadNbProposition=[];
 		
 		var initialize = function(){
-			that._coherenceMenu=$("<ul>",{"class":"nav navbar-nav"});
-			that._coherenceContent=$("<div>",{"class":"col-lg-10 ongletContent"});
+			that._propositionMenu=$("<ul>",{"class":"nav navbar-nav"});
+			that._propositionContent=$("<div>",{"class":"col-lg-10 ongletContent"});
 			
 			// On ajoute les listener socket io
 			addListener();
 			
-			that.addClass("row coherenceContener theContener").append([
+			that.addClass("row propositionContener theContener").append([
 				$("<div>",{"class":"col-lg-2","id":"menu"}).append([
 					$("<div>",{"class":"sidebar-nav"}).append([
 						$("<div>",{"class":"navbar navbar-default","role":"navigation"}).append([
@@ -57,20 +57,20 @@
 								$("<span>",{"class":"visible-xs navbar-brand"}).text("Sidebar menu")
 							]),
 							$("<div>",{"class":"navbar-collapse collapse sidebar-navbar-collapse"}).append([
-							    that._coherenceMenu
+							    that._propositionMenu
 							])
 						])
 					])
 				]),
-				that._coherenceContent
+				that._propositionContent
 			]);
 			
 			$.each(that.parametres.content, function( name, value ) {
-				addCoherence(name,value);
+				addProposition(name,value);
 			});
 			
 			setTimeout(function(){
-				$.each(that.tabLoadNbincoherence, function( index, callback ) {
+				$.each(that.tabLoadNbProposition, function( index, callback ) {
 					callback();
 				});
 			},300);
@@ -79,38 +79,38 @@
 		};
 		
 		var addListener=function(){
-			that.parametres.socket.on('refresh-nb-incoherence',function(coherenceName,outil,target,nbIncoherence){
-				// On ne prend en compte l'evenement que si on a cette coherence et quelle concerne le même outil et target
-				if(coherenceName in that.parametres.content && that.parametres.content[coherenceName].outil==outil && that.parametres.content[coherenceName].target==target)
-					that._coherenceMenu.find("li a[href='#"+coherenceName+"'] .badge").empty().text(nbIncoherence);
+			that.parametres.socket.on('refresh-nb-proposition',function(propositionName,outil,target,nbProposition){
+				// On ne prend en compte l'evenement que si on a cette proposition et quelle concerne le même outil et target
+				if(propositionName in that.parametres.content && that.parametres.content[propositionName].outil==outil && that.parametres.content[propositionName].target==target)
+					that._propositionMenu.find("li a[href='#"+propositionName+"'] .badge").empty().text(nbProposition);
 			});
 		}
 		
-		var addCoherence=function(coherenceName,coherence){
-			var coherenceLink=$("<a>",{"href":"#"+coherenceName})
+		var addProposition=function(propositionName,proposition){
+			var propositionLink=$("<a>",{"href":"#"+propositionName})
 	    		.append([
-	    		    $("<span>").text(coherence.label),
+	    		    $("<span>").text(proposition.label),
 	    		    $("<span>",{"class":"glyphicon glyphicon-chevron-right pull-right"}),
 	    		    $("<span>",{"class":"badge menu-badge pull-right"}).append(
 	    		    	$("<span>",{"class":"glyphicon glyphicon-refresh glyphicon-refresh-animate glyphicon-refresh-animate"})		
 	    		    )
 	    		])
 	    		.on("click",function(){
-		    		launchCoherence(coherenceName,coherence.outil,coherence.target,coherence.inputName,coherence.answer,coherence.answerMultiple,coherence.pluginInput,coherence.plugins);
+		    		launchProposition(propositionName,proposition.outil,proposition.target,proposition.inputName,proposition.answer,proposition.pluginInput);
 		    		
 		    		inactiveMenu();
 		    		$(this).parent().addClass("active");
 	    		});
 			
 			
-			that.tabLoadNbincoherence.push(function(){
-				var coherenceClass=new CoherenceUtile(that.parametres.socket,coherenceName,coherence.outil,coherence.target);
-				coherenceClass.loadNbIncoherence();
+			that.tabLoadNbProposition.push(function(){
+				var propositionClass=new PropositionUtile(that.parametres.socket,propositionName,proposition.outil,proposition.target);
+				propositionClass.loadNbProposition();
 			});
 			
-			that._coherenceMenu.append(
+			that._propositionMenu.append(
 				$("<li>").append([
-				    coherenceLink
+				    propositionLink
 				])
 			);
 			
@@ -118,43 +118,27 @@
 		}
 		
 		var inactiveMenu=function(){
-			that._coherenceMenu.find('li').each(function(){
+			that._propositionMenu.find('li').each(function(){
 				$(this).removeClass('active');
 			});
 		}
 		
-		var launchCoherence=function(coherenceName,outil,target,inputName,answer,answerMultiple,pluginInput,plugins){
+		var launchProposition=function(propositionName,outil,target,inputName,answer,pluginInput){
 			var onglets=$("<ul>",{"class":"nav nav-tabs","role":"tablist"});
 			var contents=$("<div>",{"class":"tab-content"});
 			
-			that._coherenceContent.empty();
+			that._propositionContent.empty();
 			
-			that.coherenceClass=new CoherenceUtile(that.parametres.socket,coherenceName,outil,target,inputName,answer,answerMultiple,pluginInput);
-			that.coherenceName=coherenceName;
+			that.propositionClass=new PropositionUtile(that.parametres.socket,propositionName,outil,target,inputName,answer,pluginInput);
+			that.propositionName=propositionName;
 		
 			var pluginsDesc=[
 			    {
 			    	"title" : "Résolutions",
 			    	"label" : "resolution",
-			    	"content" : $("<div>").coherence({"coherenceClass" : that.coherenceClass,autoStart:true})
+			    	"content" : $("<div>").proposition({"propositionClass" : that.propositionClass,autoStart:true})
 			    }           
 			];
-			
-			if($.inArray("propositions",plugins)>-1){
-				pluginsDesc.push({
-			    	"title" : "Propositions",
-			    	"label" : "propositions",
-			    	"content" : $("<div>").coherencePropositions({"coherenceClass" : that.coherenceClass})
-			    });
-			}
-			
-			if($.inArray("resolutionsMultiple",plugins)>-1){
-				pluginsDesc.push({
-			    	"title" : "Résolutions multiple",
-			    	"label" : "resolutionsMultiple",
-			    	"content" : $("<div>").coherenceResolutions({"coherenceClass" : that.coherenceClass})
-			    });
-			}
 			
 			
 			// Création des onglets et de leur contenu
@@ -179,7 +163,7 @@
 			});
 			
 
-			that._coherenceContent.append(
+			that._propositionContent.append(
 				$("<div>").append([
 	               	onglets,
 	               	contents
@@ -191,12 +175,12 @@
 		
 		var refresh=function(){
 			// On met le badge en mode chargement
-			that._coherenceMenu.find("li a[href='#"+that.coherenceName+"'] .badge")
+			that._propositionMenu.find("li a[href='#"+that.propositionName+"'] .badge")
 				.empty()
 				.append($("<span>",{"class":"glyphicon glyphicon-refresh glyphicon-refresh-animate glyphicon-refresh-animate"}));
 			
-			// On lance le chargement du nombre d'incoherence
-			that.coherenceClass.loadNbIncoherence();
+			// On lance le chargement du nombre de proposition
+			that.propositionClass.loadNbProposition();
 		}
 		
 		var methods={};
@@ -205,7 +189,7 @@
 			if ( methods[method] ) {
 				return methods[ method ].apply( that, Array.prototype.slice.call( args, 1 ));
 			} else{
-				$.error( 'Method ' +  method + ' does not exist on jQuery.coherenceContener' );
+				$.error( 'Method ' +  method + ' does not exist on jQuery.propositionContener' );
 			}
 		}
 		

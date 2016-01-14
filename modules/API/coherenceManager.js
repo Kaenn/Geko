@@ -257,10 +257,13 @@ function getFieldsInSearchBody(body,mapping_fields){
 				mapping_fields.forEach(function(mapping){
 					var field_name=mapping.name;
 					var label=mapping.label;
+					var isArray=false;
+					if("isArray" in mapping)
+						isArray=mapping.isArray;
 					
 					if(field_name in fields){
 						var field_val=fields[field_name];
-						if(Array.isArray(field_val))		
+						if(Array.isArray(field_val) && !isArray)		
 							row[label]=field_val[0];
 						else
 							row[label]=field_val;
