@@ -6,11 +6,12 @@
  */
 var Q = require('q');
 var pluginUtility = require('./pluginUtility');
+var ElasticSearchResult=require('./ElasticSearchResult');
 
 
 // Enregistrement de toutes les coherences
 var allCoherences=[];
-var coherencesName=['test'];
+var coherencesName=['host_without_project','host_without_zabbix_mapping'];
 
 // Action for all coherence
 coherencesName.forEach(function(name){
@@ -41,14 +42,9 @@ function getNbCoherence(coherence){
  */
 function getIncoherenceAndPropositions(coherence,blacklist,justOne){
 	return getIncoherences(coherence,blacklist,justOne).then(function(allIncoherence){
-		var allIncoherenceId=[];
-		allIncoherence.forEach(function(oneIncoherence){
-			if(typeof oneIncoherence !== "undefined" && "id" in oneIncoherence && oneIncoherence.id!=null && oneIncoherence.id!=""){
-				allIncoherenceId.push(oneIncoherence.id);
-			}
-		});
 		
-		return getPropositions(coherence,allIncoherenceId).then(function(allPropositions){
+		
+		return getPropositions(coherence,allIncoherence).then(function(allPropositions){
 			// on reclasse les propositions par identifier 
 			var propositionsByIdentifier={};
 			
@@ -66,11 +62,12 @@ function getIncoherenceAndPropositions(coherence,blacklist,justOne){
 				});
 			});
 			
-			
 			// Search proposition of each incoherence
 			allIncoherence.forEach(function(oneIncoherence){
 				if("id" in oneIncoherence && oneIncoherence['id'] in propositionsByIdentifier){
 					oneIncoherence["propositions"]=propositionsByIdentifier[oneIncoherence['id']];
+				}else if("label" in oneIncoherence && oneIncoherence['label'] in propositionsByIdentifier){
+					oneIncoherence["propositions"]=propositionsByIdentifier[oneIncoherence['label']];
 				}
 			});
 
@@ -90,25 +87,34 @@ function getIncoherences(coherence,blacklist,justOne){
 	});
 }
 
-function getPropositions(coherence,ids){
+function getPropositions(coherence,incoherences){
 	var propositions=allCoherences[coherence].getParams("propositions");
 	
 	var promises=[];
 	
 	propositions.forEach(function(proposition){
 		var field=proposition.field;
-		var fieldIdentifier=proposition.fieldIdentifier;
+		var identifier=proposition.identifier;
+		var identifierType=proposition.identifierType;
 		
-		var fields=[field,fieldIdentifier];
+		var fields=[field];
 		
 		var search_body=proposition.search;
 		var equalTo=proposition.equalTo;
 		var source=proposition.source;
 		
 		var terms={};
-		terms[fieldIdentifier]=ids;
+		
+		var allIdentifiers=[];
+		incoherences.forEach(function(incoherence){
+			if(typeof incoherence !== "undefined" && identifierType in incoherence && incoherence[identifierType]!=null && incoherence[identifierType]!=""){
+				allIdentifiers.push(incoherence[identifierType]);
+			}
+		});
+		
+		terms[identifier]=allIdentifiers;
 		var filter={
-	        "terms" : terms
+	        //"terms" : terms
 		}
 		
 		promises.push(pluginUtility.queryInInventaire("source",source,filter,search_body,fields).then(function(body){
@@ -118,10 +124,16 @@ function getPropositions(coherence,ids){
 			if(equalTo=="id") id_field=field;
 			if(equalTo=="label") label_field=field;
 			
-			return getFieldsInSearchBody(body,[{name:fieldIdentifier,label:"_id"},{name:id_field,label:"id"},{name:label_field,label:"label"}]);
+			var esResult=new ElasticSearchResult();
+			esResult.loadFromBodyFields(body);
+			esResult.addWhitelistField(identifier,allIdentifiers);
+			esResult.addFormattedField(identifier,"_id",false);
+			esResult.addFormattedField(id_field,"id",false);
+			esResult.addFormattedField(label_field,"label",false);
+			
+			return esResult.getFormattedResult();
 		}));
 	});
-	
 	
 	return Q.all(promises);
 }
@@ -251,7 +263,6 @@ function getFieldsInSearchBody(body,mapping_fields){
 		body.hits.hits.forEach(function(hit){
 			if("fields" in hit){
 				var fields=hit['fields'];
-				
 				var row={};
 				
 				mapping_fields.forEach(function(mapping){

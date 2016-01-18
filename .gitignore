@@ -9,6 +9,14 @@ node_modules
 # Ignore tous les fichiers d'environnement
 config/*
 
+# Ignore les fichiers de source
+sources/*
+!sources/.gitkeep
+
+# Ingore les fichiers de coherence
+coherences/*
+!coherences/.gitkeep
+
 # Sauf les fichiers d'envrinnement de prod et preprod
 !config/config.js.tpl
 !config/skeleton.js

@@ -31,18 +31,24 @@
 			
 			$("#contener").coherenceContener({
 				"content" : {
-			    	"test" : {
+			    	"host_without_project" : {
 				        "outil" : "default",
 				        "target" : "all",
-				        "label" : "Teste coherence",
-				        "inputName" : "input_name",
-				        "answer" : "Quel est la résolution de l'élement <$label$>?",
-				        "answerMultiple" : "Quel est la résolution des élements?",
+				        "label" : "Host sans Projet",
+				        "answer" : "Quel est le projet du host <$label$>?",
+				        "answerMultiple" : "Quel est le projet des hosts?",
 				        "pluginInput" : "OneInputForm" ,
 				        "plugins" : [
-							"propositions",
+							/*"propositions",*/
 							"resolutionsMultiple"
 						]
+			        },
+			        "host_without_zabbix_mapping" : {
+				        "outil" : "default",
+				        "target" : "all",
+				        "label" : "Host sans mapping Zabbix",
+				        "answer" : "Quel est le mapping Zabbix du host <$label$>?",
+				        "pluginInput" : "OneInputForm"
 			        }
 				},
 			    "socket" : socket

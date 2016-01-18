@@ -1,5 +1,5 @@
 /**
- * Middleware permettant de centraliser toutes les actions sur les coherences.
+ * Middleware permettant de centraliser toutes les actions sur les propositions.
  * Source des middleware de coherence : ../coherences/<coherence-name>
  * 
  * @author : Kaenn
@@ -8,15 +8,15 @@ var Q = require('q');
 var pluginUtility = require('./pluginUtility');
 
 
-// Enregistrement de toutes les coherences
-var allCoherences=[];
-var coherencesName=['test'];
+// Enregistrement de toutes les propositions
+var allPropositions=[];
+var propositionsName=['testProp'];
 
 // Action for all coherence
-coherencesName.forEach(function(name){
+propositionsName.forEach(function(name){
 	// get coherence class
-	var coherenceClass=require("../../coherences/"+name);
-	allCoherences[name]=coherenceClass;
+	var propositionClass=require("../../propositions/"+name);
+	allPropositions[name]=propositionClass;
 });
 
 

@@ -9,7 +9,8 @@ var clientElasticsearch=elasticsearch.client;
 
 // Enregistrement de toutes les sources
 var allSources=[];
-var sourcesName=['source1','sourceResponses1','sourceIP1','sourceIP2','sourceIP3'];
+//var sourcesName=['source1','sourceResponses1','sourceIP1','sourceIP2','sourceIP3'];
+var sourcesName=['claratact_host','claratact_project','zabbix_host'];
 
 function launchSourcesScheduler(){
 	console.log("Launch all sources Scheduler :");
@@ -22,6 +23,7 @@ function launchSourcesScheduler(){
 		addSchedulerData("source",name,sourcesClass.getParams("refreshTimer"),sourcesClass.getDataFromSource);
 		console.log(" * Source '"+name+"' is launch.");
 	});
+	console.log("All sources launch.");
 }
 
 
