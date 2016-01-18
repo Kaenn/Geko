@@ -72,8 +72,8 @@
 
 				if(that.parametres.propositions!=null){
 					var proposition=that.parametres.propositions.shift();
-					if(proposition!=null && proposition!="" && "value" in proposition){
-						that._input.find("input[value='"+proposition.value+"']").attr("checked",true);
+					if(proposition!=null && proposition!="" && "id" in proposition){
+						that._input.find("input[value='"+proposition.id+"']").attr("checked",true);
 					}
 				}
 			}else{

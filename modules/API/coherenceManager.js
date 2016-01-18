@@ -94,42 +94,44 @@ function getPropositions(coherence,incoherences){
 	
 	propositions.forEach(function(proposition){
 		var field=proposition.field;
-		var identifier=proposition.identifier;
-		var identifierType=proposition.identifierType;
 		
-		var fields=[field];
+		var fields=[field,'mappings.glpi.type'];
 		
 		var search_body=proposition.search;
-		var equalTo=proposition.equalTo;
 		var source=proposition.source;
 		
-		var terms={};
-		
-		var allIdentifiers=[];
-		incoherences.forEach(function(incoherence){
-			if(typeof incoherence !== "undefined" && identifierType in incoherence && incoherence[identifierType]!=null && incoherence[identifierType]!=""){
-				allIdentifiers.push(incoherence[identifierType]);
-			}
-		});
-		
-		terms[identifier]=allIdentifiers;
-		var filter={
-	        //"terms" : terms
-		}
-		
-		promises.push(pluginUtility.queryInInventaire("source",source,filter,search_body,fields).then(function(body){
-			var id_field=null;
-			var label_field=null;
-			
-			if(equalTo=="id") id_field=field;
-			if(equalTo=="label") label_field=field;
-			
+		promises.push(pluginUtility.queryInInventaire("source",source,null,search_body,fields).then(function(body){
 			var esResult=new ElasticSearchResult();
 			esResult.loadFromBodyFields(body);
+			
+			var identifier=proposition.identifier;
+			var identifierType=proposition.identifierType;
+			
+			var allIdentifiers=[];
+			incoherences.forEach(function(incoherence){
+				if(typeof incoherence !== "undefined" && identifierType in incoherence && incoherence[identifierType]!=null && incoherence[identifierType]!=""){
+					allIdentifiers.push(incoherence[identifierType]);
+				}
+			});
+			
 			esResult.addWhitelistField(identifier,allIdentifiers);
 			esResult.addFormattedField(identifier,"_id",false);
-			esResult.addFormattedField(id_field,"id",false);
-			esResult.addFormattedField(label_field,"label",false);
+			
+			if("value" in proposition){
+				esResult.addConstantField(identifierType,proposition.value);
+			}else{
+				var equalTo=proposition.equalTo;
+				
+				var id_field=null;
+				var label_field=null;
+				if(equalTo=="id") id_field=field;
+				if(equalTo=="label") label_field=field;
+					
+				
+				esResult.addFormattedField(id_field,"id",false);
+				esResult.addFormattedField(label_field,"label",false);
+			}
+			
 			
 			return esResult.getFormattedResult();
 		}));

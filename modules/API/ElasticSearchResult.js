@@ -9,6 +9,7 @@ function ElasticSearchResult() {
   this.blacklistFields = {};
   this.whitelistFields = {};
   this.formattedFields = [];
+  this.constantFields = {};
 }
 
 /**
@@ -119,6 +120,12 @@ ElasticSearchResult.prototype.useThisRow = function(row) {
 	return true;
 };
 
+ElasticSearchResult.prototype.addConstantField = function(field_name,constant) {
+	this.constantFields[field_name]=constant;
+	
+	return this;
+};
+
 /**
  * Add format to field
  * @param field_name
@@ -144,6 +151,9 @@ ElasticSearchResult.prototype.addFormattedField = function(field_name,new_field_
 ElasticSearchResult.prototype.formatRow = function(row) {
 	var newRow={};
 	
+	/**
+	 * Format field row
+	 */
 	this.formattedFields.forEach(function(format){
 		var field_name=format.fieldName;
 		
@@ -161,6 +171,15 @@ ElasticSearchResult.prototype.formatRow = function(row) {
 		}
 	});
 	
+	/**
+	 * Add constant
+	 */
+	for(var constantField in this.constantFields){
+		var constant=this.constantFields[constantField];
+		
+		newRow[constantField]=constant;
+	}
+	
 	return newRow;
 };
 
@@ -171,7 +190,7 @@ ElasticSearchResult.prototype.formatRow = function(row) {
  */
 ElasticSearchResult.prototype.getFormattedResult = function() {
 	var that=this;
-	
+
 	var formattedResult=[];
 	that.result.forEach(function(row){
 		if(that.useThisRow(row)){
