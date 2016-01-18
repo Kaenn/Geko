@@ -10,7 +10,7 @@ var clientElasticsearch=elasticsearch.client;
 // Enregistrement de toutes les sources
 var allSources=[];
 //var sourcesName=['source1','sourceResponses1','sourceIP1','sourceIP2','sourceIP3'];
-var sourcesName=['claratact_host','claratact_project','zabbix_host'];
+var sourcesName=['claratact_host','claratact_project','zabbix_host','glpi_host','claratact_host_type'];
 
 function launchSourcesScheduler(){
 	console.log("Launch all sources Scheduler :");

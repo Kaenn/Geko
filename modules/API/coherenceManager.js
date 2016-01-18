@@ -11,7 +11,7 @@ var ElasticSearchResult=require('./ElasticSearchResult');
 
 // Enregistrement de toutes les coherences
 var allCoherences=[];
-var coherencesName=['host_without_project','host_without_zabbix_mapping'];
+var coherencesName=['host_without_project','host_without_zabbix_mapping','host_without_glpi_mapping','host_without_type'];
 
 // Action for all coherence
 coherencesName.forEach(function(name){

@@ -44,7 +44,6 @@ function queryInInventaire(index,type,filter,search_body,field){
 
 	body['fields']=field;
 
-	console.log(index,type,body);
 	return clientElasticsearch.search({
 		index: index,
 		type: type,

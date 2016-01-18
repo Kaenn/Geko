@@ -48,7 +48,31 @@
 				        "target" : "all",
 				        "label" : "Host sans mapping Zabbix",
 				        "answer" : "Quel est le mapping Zabbix du host <$label$>?",
-				        "pluginInput" : "OneInputForm"
+				        "pluginInput" : "OneInputForm",
+				        "plugins" : [
+							"propositions"
+						]
+			        },
+			        "host_without_glpi_mapping" : {
+				        "outil" : "default",
+				        "target" : "all",
+				        "label" : "Host sans mapping GLPI",
+				        "answer" : "Quel est le mapping GLPI du host <$label$>?",
+				        "pluginInput" : "OneInputForm",
+				        "plugins" : [
+							"propositions"
+						]
+			        },
+			        "host_without_type" : {
+				        "outil" : "default",
+				        "target" : "all",
+				        "label" : "Host sans mapping Type",
+				        "answer" : "Quel est le type du host <$label$>?",
+				        "pluginInput" : "RadioForm",
+				        "plugins" : [
+							"propositions",
+							"resolutionsMultiple"
+						]
 			        }
 				},
 			    "socket" : socket
