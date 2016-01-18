@@ -56,8 +56,8 @@
 					that._input.append(
 						$("<div>",{"class":"radio"}).append([
                          	$('<label>'
-							    +'<input type="radio" name="radio-'+that.parametres.coherence+'" value="'+input.value+'">'
-							    +input.text
+							    +'<input type="radio" name="radio-'+that.parametres.coherence+'" value="'+input.id+'">'
+							    +input.label
 							  +'</label>')
                         ])
 					);
