@@ -1,7 +1,8 @@
 /**
  * @author : Kaenn
  */
-var Q = require('q');
+
+var CheckParser=require('./check/CheckParser');
 
 //Constructor
 function ElasticSearchResult() {
@@ -10,6 +11,8 @@ function ElasticSearchResult() {
   this.whitelistFields = {};
   this.formattedFields = [];
   this.constantFields = {};
+  this.checkFields= {};
+  this.resultLimit=null;
 }
 
 /**
@@ -53,8 +56,8 @@ ElasticSearchResult.prototype.addBlacklistField = function(field_name,blacklist)
  * @returns {Boolean}
  */
 ElasticSearchResult.prototype.isInBlacklist = function(row) {
-	for(var field_name in this.blacklist){
-		var blacklistOfField=this.blacklist[field_name];
+	for(var field_name in this.blacklistFields){
+		var blacklistOfField=this.blacklistFields[field_name];
 		
 		var values=row[field_name];
 		if(!Array.isArray(values)) values=[values];
@@ -63,10 +66,11 @@ ElasticSearchResult.prototype.isInBlacklist = function(row) {
 		values.forEach(function(val){
 			if(blacklistOfField.indexOf(val) >= 0) isIn=true;
 		});
-		if(isIn) return false;
+
+		if(isIn) return true;
 	}
 	
-	return true;
+	return false;
 };
 
 /**
@@ -109,19 +113,66 @@ ElasticSearchResult.prototype.isInWhitelist = function(row) {
  * @returns
  */
 ElasticSearchResult.prototype.useThisRow = function(row) {
-	// If have withlist search if row is in
-	if(Object.keys(this.whitelistFields).length > 0){
-		return this.isInWhitelist(row);
-	// If have blacklist search if row is not in
-	}else if(Object.keys(this.blacklist).length > 0){
-		return !this.isInBlacklist(row);
+	if(this.isCheck(row)){
+		// If have withlist search if row is in
+		if(Object.keys(this.whitelistFields).length > 0){
+			return this.isInWhitelist(row);
+		// If have blacklist search if row is not in
+		}else if(Object.keys(this.blacklistFields).length > 0){
+			return !this.isInBlacklist(row);
+		}
+		
+		return true;
+	}
+	
+	return false;
+};
+
+/**
+ * Verify if check is good for this row
+ */
+ElasticSearchResult.prototype.isCheck = function(row) {
+	// If have checkField
+	if(Object.keys(this.checkFields).length > 0){
+		var cp=new CheckParser(this.checkFields);
+		
+		return cp.check(row);
 	}
 	
 	return true;
-};
+}
 
+/**
+ * Add field constant
+ * @param field_name
+ * @param constant
+ * @returns {ElasticSearchResult}
+ */
 ElasticSearchResult.prototype.addConstantField = function(field_name,constant) {
 	this.constantFields[field_name]=constant;
+	
+	return this;
+};
+
+/**
+ * Add a check
+ * @param field_name
+ * @param check
+ * @returns {ElasticSearchResult}
+ */
+ElasticSearchResult.prototype.addCheckField = function(field_name,check) {
+	this.checkFields[field_name]=check;
+	
+	return this;
+};
+
+/**
+ * Set the limit number of result
+ * @param limit
+ * @returns {ElasticSearchResult}
+ */
+ElasticSearchResult.prototype.setLimitResult = function(limit) {
+	this.resultLimit=limit;
 	
 	return this;
 };
@@ -192,13 +243,21 @@ ElasticSearchResult.prototype.getFormattedResult = function() {
 	var that=this;
 
 	var formattedResult=[];
-	that.result.forEach(function(row){
+	
+	that.result.every(function(row){
 		if(that.useThisRow(row)){
 			var newRow=that.formatRow(row);
 
-			if(Object.keys(newRow).length > 0)
+			if(Object.keys(newRow).length > 0){
 				formattedResult.push(newRow);
+				
+				// check if limit is not exceed
+				if(this.resultLimit!=null && formattedResult.length >= this.resultLimit){
+					return false;
+				}
+			}
 		}
+		return true;
 	});
 
 	return formattedResult;

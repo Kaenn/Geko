@@ -11,7 +11,7 @@ var ElasticSearchResult=require('./ElasticSearchResult');
 
 // Enregistrement de toutes les coherences
 var allCoherences=[];
-var coherencesName=['host_without_project','host_without_zabbix_mapping','host_without_glpi_mapping','host_without_type'];
+var coherencesName=['host_without_project','host_without_zabbix_mapping','host_without_glpi_mapping','host_without_type','host_with_multi_glpi_mapping'];
 
 // Action for all coherence
 coherencesName.forEach(function(name){
@@ -22,15 +22,9 @@ coherencesName.forEach(function(name){
 
 
 function getNbCoherence(coherence){
-	var fields=allCoherences[coherence].getParams("fields");
-	var search_body=allCoherences[coherence].getParams("search");
-	search_body["fields"]=fields;
-	
-	var redisExceptRegexp=getKeyDataException(coherence,"validate","*");
-	return pluginUtility.searchInInventaire(redisExceptRegexp,"source",allCoherences[coherence].getParams("source"),search_body,[],false).then(function(body){
-		return body.hits.total;
-	})
-	.catch(console.log);
+	return getIncoherences(coherence,[],false).then(function(allIncoherence){
+		return allIncoherence.length;
+	});
 }
 
 
@@ -42,8 +36,6 @@ function getNbCoherence(coherence){
  */
 function getIncoherenceAndPropositions(coherence,blacklist,justOne){
 	return getIncoherences(coherence,blacklist,justOne).then(function(allIncoherence){
-		
-		
 		return getPropositions(coherence,allIncoherence).then(function(allPropositions){
 			// on reclasse les propositions par identifier 
 			var propositionsByIdentifier={};
@@ -82,8 +74,25 @@ function getIncoherences(coherence,blacklist,justOne){
 	search_body["fields"]=fields;
 	
 	var redisExceptRegexp=getKeyDataException(coherence,"validate","*");
-	return pluginUtility.searchInInventaire(redisExceptRegexp,"source",allCoherences[coherence].getParams("source"),search_body,blacklist,justOne).then(function(body){
-		return getFieldsInSearchBody(body,[{name:fields[0],label:"id"},{name:fields[1],label:"label"}]);
+	return pluginUtility.searchInInventaire(redisExceptRegexp,"source",allCoherences[coherence].getParams("source"),search_body,[],false).then(function(body){
+		var esResult=new ElasticSearchResult();
+		esResult.loadFromBodyFields(body)
+				.addFormattedField(fields[0],"id",false)
+				.addFormattedField(fields[1],"label",false)
+				.addBlacklistField("id",blacklist)
+				.setLimitResult((justOne) ? 1 : null);
+		
+		// If have checks
+		var checks=allCoherences[coherence].getParams("checks");
+		if(checks!=null){
+			for(var field_name in checks){
+				var check=checks[field_name];
+				
+				esResult.addCheckField(field_name,check);
+			}
+		}
+		
+		return esResult.getFormattedResult();
 	});
 }
 
@@ -95,7 +104,7 @@ function getPropositions(coherence,incoherences){
 	propositions.forEach(function(proposition){
 		var field=proposition.field;
 		
-		var fields=[field,'mappings.glpi.type'];
+		var fields=[field];
 		
 		var search_body=proposition.search;
 		var source=proposition.source;
@@ -114,8 +123,8 @@ function getPropositions(coherence,incoherences){
 				}
 			});
 			
-			esResult.addWhitelistField(identifier,allIdentifiers);
-			esResult.addFormattedField(identifier,"_id",false);
+			esResult.addWhitelistField(identifier,allIdentifiers)
+					.addFormattedField(identifier,"_id",false);
 			
 			if("value" in proposition){
 				esResult.addConstantField(identifierType,proposition.value);
@@ -128,8 +137,8 @@ function getPropositions(coherence,incoherences){
 				if(equalTo=="label") label_field=field;
 					
 				
-				esResult.addFormattedField(id_field,"id",false);
-				esResult.addFormattedField(label_field,"label",false);
+				esResult.addFormattedField(id_field,"id",false)
+						.addFormattedField(label_field,"label",false);
 			}
 			
 			
