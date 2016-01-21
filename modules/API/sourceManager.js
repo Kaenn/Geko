@@ -10,7 +10,15 @@ var clientElasticsearch=elasticsearch.client;
 // Enregistrement de toutes les sources
 var allSources=[];
 //var sourcesName=['source1','sourceResponses1','sourceIP1','sourceIP2','sourceIP3'];
-var sourcesName=['claratact_host','claratact_project','zabbix_host','glpi_host','claratact_host_type'];
+//var sourcesName=['claratact_host','claratact_project','zabbix_host','glpi_host','claratact_host_type','snmp_ip'];
+var sourcesName=[];
+
+/*
+var ipplan_ip_source=require("../../sources/ipplan_ip");
+ipplan_ip_source.getDataFromSource().then(function(data){
+	updateDataToES("source","ipplan_ip",data);
+})
+.catch(console.log);*/
 
 function launchSourcesScheduler(){
 	console.log("Launch all sources Scheduler :");
@@ -32,7 +40,8 @@ function addSchedulerData(index,type,timer,update_function){
 	setInterval(function(){
 		update_function().then(function(data){
 			updateDataToES(index,type,data);
-		});
+		})
+		.catch(console.log);
 	},timer);
 }
 

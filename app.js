@@ -1,5 +1,9 @@
 var express = require('express');
- 
+
+
+//Recuperation de la variable de config
+var config = require('./config/config');
+
 var app = express();
 var swig=require('swig');
 var path = require('path');
@@ -12,9 +16,6 @@ var coherenceView = require('./modules/View/coherenceView');
 var propositionView = require('./modules/View/propositionView');
 var sourceManager = require('./modules/API/sourceManager');
 
-
-// Recuperation de la variable de config
-var config = require('./config/config');
 
 //Monkey patch pour controler les format et params des requetes
 require('./response');

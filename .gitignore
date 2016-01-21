@@ -20,3 +20,6 @@ coherences/*
 # Sauf les fichiers d'envrinnement de prod et preprod
 !config/config.js.tpl
 !config/skeleton.js
+
+# Ignore le repertoire local
+local/*

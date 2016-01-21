@@ -22,3 +22,5 @@ Manage multi-source consistency
 - elasticsearch
 - redis
 - socket-io
+- simple-ssh
+- request
