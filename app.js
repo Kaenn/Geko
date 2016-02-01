@@ -15,6 +15,7 @@ var ldap = require('./modules/ldap');
 var coherenceView = require('./modules/View/coherenceView');
 var propositionView = require('./modules/View/propositionView');
 var sourceManager = require('./modules/API/sourceManager');
+var sourceManager = require('./modules/API/controler/ConsistencyManager');
 
 
 //Monkey patch pour controler les format et params des requetes
@@ -126,7 +127,7 @@ app.post("/login", function (req, res) {
 
 
 // Launch source scheduler
-sourceManager.launchSourcesScheduler();
+//sourceManager.launchSourcesScheduler();
 
 io.sockets.on('connection', function(client) {
 	console.log('connecter');

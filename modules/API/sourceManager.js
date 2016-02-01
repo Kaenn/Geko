@@ -11,12 +11,12 @@ var clientElasticsearch=elasticsearch.client;
 var allSources=[];
 //var sourcesName=['source1','sourceResponses1','sourceIP1','sourceIP2','sourceIP3'];
 //var sourcesName=['claratact_host','claratact_project','zabbix_host','glpi_host','claratact_host_type','snmp_ip'];
-var sourcesName=[];
+var sourcesName=['snmp_ip'];
 
 /*
-var ipplan_ip_source=require("../../sources/ipplan_ip");
+var ipplan_ip_source=require("../../sources/snmp_ip");
 ipplan_ip_source.getDataFromSource().then(function(data){
-	updateDataToES("source","ipplan_ip",data);
+	updateDataToES("source","snmp_ip",data);
 })
 .catch(console.log);*/
 

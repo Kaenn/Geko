@@ -17,9 +17,14 @@ sources/*
 coherences/*
 !coherences/.gitkeep
 
+# Ingore les fichiers de consistency
+modules/API/controler/consistency/*
+!modules/API/controler/consistency/.gitkeep
+
 # Sauf les fichiers d'envrinnement de prod et preprod
 !config/config.js.tpl
 !config/skeleton.js
 
 # Ignore le repertoire local
 local/*
+!local/.gitkeep
