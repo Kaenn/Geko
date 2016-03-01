@@ -46,18 +46,29 @@ function updateDataToES(index,type,data){
 		bodyBulk.push(d);
 	});
 
+	var body={
+		"fields" : ["_id"]
+	};
+	
+	// On supprime tous les element qui ne sont pas inserer/modifier
+	if(allIds.length > 0){
+		body.filter={
+			"not" : {
+            	"terms" : { "_id" : allIds}
+			}
+        };
+	// Si il n'y a pas d'insertion/modification alors on supprime tous
+	}else{
+		body.query={
+			"match_all":{}
+		}
+	}
+	
 	// on recherche les elements qui ne doivent plus etre présent
 	clientElasticsearch.search({
 		index: index,
 		type: type,
-		body: {
-			"fields" : ["_id"],
-			"filter" : {
-				"not" : {
-	            	"terms" : { "_id" : allIds}
-				}
-	        }
-		}
+		body: body
 	}).then(function (body) {
 		if("hits" in body && "hits" in body['hits']){
 			var hits=body['hits']['hits'];
