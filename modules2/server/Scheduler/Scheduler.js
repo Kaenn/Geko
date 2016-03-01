@@ -27,7 +27,7 @@ function addSchedulerData(index,type,timer,update_function){
  */
 function updateDataToES(index,type,data){
 	var bodyBulk=[];
-
+	
 	var allIds=[];
 	
 	var i=1;

@@ -55,7 +55,19 @@ var loadFromBodyFields = function(body) {
 	if(body.hits.hits.length > 0){
 		body.hits.hits.forEach(function(hit){
 			if("fields" in hit){
-				result.push(hit['fields']);
+				var fields=hit['fields'];
+
+				var newRow={};
+				for (var field_name in fields) {
+					var field_value=fields[field_name];
+
+					if(Array.isArray(field_value))		
+						newRow[field_name]=field_value[0];
+					else
+						newRow[field_name]=field_value;
+				}
+
+				result.push(newRow);
 			}
 		});
 	}
