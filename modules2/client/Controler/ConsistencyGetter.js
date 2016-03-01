@@ -9,17 +9,12 @@ var Q = require('q');
 var ElasticsearchClient = require('../../Elasticsearch/ElasticsearchClient');
 var ElasticsearchParser = require('../../Elasticsearch/ElasticsearchParser');
 
-var method = ConsistencyManager.prototype;
-
 /**
  * Constructeur
  */
-function ConsistencyManager(name) {
-	this._params=require("../consistency/"+name+"/params");
-}
+function ConsistencyManager() {}
 
-
-
+var methodStatic = ConsistencyManager;
 
 
 /**
@@ -29,7 +24,7 @@ function ConsistencyManager(name) {
  * @param justOne
  * @returns
  */
-var getIncoherences=function(name,blacklist,justOne){
+methodStatic.getIncoherences=function(name,blacklist,justOne){
 	var size=config.maxIncoherences;
 	if(justOne) size=1;
 	
@@ -59,17 +54,18 @@ var getIncoherences=function(name,blacklist,justOne){
 /**
  * Search responses of one elem
  */
-var getResponses=function(name,id,label){
+methodStatic.getResponses=function(name,id,label){
+	var filterOr=[{"term" : { "target.all" : true }}];
+	
+	if(id!=null && id!="") filterOr.push({"term" : { "target.id" : id }});
+	if(label!=null && label!="") filterOr.push({"term" : { "target.label" : label }});
+	
 	return ElasticsearchClient.search({
 		"index" : "consistency_"+name,
 		"type" : "consistency_responses",
 		"body" : {
 			"query" : {
-				"or" : [
-					{"term" : { "target.label" : label }},
-					{"term" : { "target.id" : id }},
-					{"term" : { "target.all" : true }}
-				]
+				"or" : filterOr
 			},
 			"sort" : [
 				{ "label" : "asc" }    
@@ -85,7 +81,7 @@ var getResponses=function(name,id,label){
 /**
  * Search all responses
  */
-var getAllResponses=function(name){
+methodStatic.getAllResponses=function(name){
 	return ElasticsearchClient.search({
 		"index" : "consistency_"+name,
 		"type" : "consistency_responses",
@@ -107,7 +103,7 @@ var getAllResponses=function(name){
 /**
  * Search suggestion of one elem
  */
-var getSuggestions=function(name,id,label){
+methodStatic.getSuggestions=function(name,id,label){
 	return ElasticsearchClient.search({
 		"index" : "consistency_"+name,
 		"type" : "consistency_suggestions",
@@ -408,4 +404,4 @@ var getAllResponses=function(coherence){
 	return null;
 }*/
 
-module.exports = ConsistencyManager;
+module.exports = methodStatic;

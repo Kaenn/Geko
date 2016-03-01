@@ -1,28 +1,72 @@
 /** 
  * @author : Kaenn
  */
-var coherenceManager = require('../API/coherenceManager');
-
+var ConsistencyGetter = require('../Controler/ConsistencyGetter');
 
 function refreshNbCoherence(clients,coherence,outil,target){
-	coherenceManager.getNbCoherence(coherence).then(function(nbIncoherence){
-		clients.emit("refresh-nb-incoherence",coherence,outil,target,nbIncoherence);
+	ConsistencyGetter.getIncoherences(coherence,[],false).then(function(incoherences){
+		clients.emit("refresh-nb-incoherence",coherence,outil,target,incoherences.length);
 	});
 }
 
 
 function getNextIncoherence(client,coherence,outil,target,blacklist){
-	coherenceManager.getNextIncoherence(coherence,blacklist).then(function(nextIncoherence){
-		if(nextIncoherence!=null)
-			client.emit("get-next-incoherence",coherence,nextIncoherence.id,nextIncoherence.label,nextIncoherence.responses,nextIncoherence.propositions);
-		else
-			client.emit("get-next-incoherence",coherence,null,null,null,null);
+	ConsistencyGetter.getIncoherences(coherence,blacklist,true).then(function(incoherences){
+		var nextIncoherence={
+			"coherence" : coherence,
+			"id" : null,
+			"label" : null,
+			"responses" : null,
+			"suggestions" :null
+		};
+		
+		if(incoherences.length > 0){
+			var theIncoherence=incoherences.shift();
+			
+			if("id" in theIncoherence && "label" in theIncoherence){
+				nextIncoherence.id=theIncoherence.id;
+				nextIncoherence.label=theIncoherence.label;
+			
+				// On recherche les réponses possible et les suggestions pour ce host
+				var promises=[
+				    ConsistencyGetter.getResponses(coherence,nextIncoherence.id,nextIncoherence.label),
+				    ConsistencyGetter.getSuggestions(coherence,nextIncoherence.id,nextIncoherence.label)
+				];
+				
+				return Q.all(promises,function(retour){
+					if(retour.length > 2){
+						nextIncoherence.responses=retour.shift();
+						nextIncoherence.suggestions=retour.shift();
+					}
+					
+					return nextIncoherence;
+				});
+			}
+		}
+		
+		return nextIncoherence;
+	}).then(function(nextIncoherence){
+		client.emit("get-next-incoherence",nextIncoherence.coherence,nextIncoherence.id,nextIncoherence.label,nextIncoherence.responses,nextIncoherence.suggestions);
 	})
-	.catch(console.log);
+	.catch(function(error){
+		console.log(error);
+		
+		client.emit("get-next-incoherence",coherence,null,null,null,null);
+	});
 }
 
 
 function getAllIncoherence(client,coherence,outil,target){
+	var promises=[
+	    ConsistencyGetter.getIncoherences(coherence,[],false),
+	    ConsistencyGetter.getAllResponses(coherence)
+	];
+	
+	//Continuer HERE
+	Q.all(promises,function(retour){
+		//incoherence.
+	});
+	
 	coherenceManager.getAllIncoherences(coherence).then(function(allIncoherencesWithResponses){
 		var allIncoherences=[];
 		var responses=[];
