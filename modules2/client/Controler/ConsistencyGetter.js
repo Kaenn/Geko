@@ -34,7 +34,7 @@ var getIncoherences=function(name,blacklist,justOne){
 	if(justOne) size=1;
 	
 	return ElasticsearchClient.search({
-		"index" : name,
+		"index" : "consistency_"+name,
 		"type" : "consistency",
 		"body" : {
 			"query" : {
@@ -61,7 +61,7 @@ var getIncoherences=function(name,blacklist,justOne){
  */
 var getResponses=function(name,id,label){
 	return ElasticsearchClient.search({
-		"index" : name,
+		"index" : "consistency_"+name,
 		"type" : "consistency_responses",
 		"body" : {
 			"query" : {
@@ -87,7 +87,7 @@ var getResponses=function(name,id,label){
  */
 var getAllResponses=function(name){
 	return ElasticsearchClient.search({
-		"index" : name,
+		"index" : "consistency_"+name,
 		"type" : "consistency_responses",
 		"body" : {
 			"query" : {
@@ -109,7 +109,7 @@ var getAllResponses=function(name){
  */
 var getSuggestions=function(name,id,label){
 	return ElasticsearchClient.search({
-		"index" : name,
+		"index" : "consistency_"+name,
 		"type" : "consistency_suggestions",
 		"body" : {
 			"query" : {
