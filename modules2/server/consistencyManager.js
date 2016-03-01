@@ -9,13 +9,15 @@ var consistenciesName=config.consistencies;
 var launchConsistenciesScheduler=function(){
 	console.log("Launch all consistencies Scheduler :");
 	consistenciesName.forEach(function(name){
-		var refreshTimer=getRefreshTimer(name);
-
-		Scheduler.addSchedulerData("consistency",name,refreshTimer,getConsistencies(name));
-		Scheduler.addSchedulerData("consistency_responses",name,refreshTimer,getResponses(name));
-		Scheduler.addSchedulerData("consistency_suggestions",name,refreshTimer,getSuggestions(name));
-		
-		console.log(" * Consistency '"+name+"' is launch.");
+		if(name!=null && name !=""){
+			var refreshTimer=getRefreshTimer(name);
+	
+			Scheduler.addSchedulerData("consistency_"+name,"consistency",refreshTimer,getConsistencies(name));
+			Scheduler.addSchedulerData("consistency_"+name,"consistency_responses",refreshTimer,getResponses(name));
+			Scheduler.addSchedulerData("consistency_"+name,"consistency_suggestions",refreshTimer,getSuggestions(name));
+			
+			console.log(" * Consistency '"+name+"' is launch.");
+		}
 	});
 	console.log("All consistencies launch.");
 }
