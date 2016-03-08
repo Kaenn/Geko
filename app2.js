@@ -12,13 +12,11 @@ var multer = require('multer');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var ldap = require('./modules/ldap');
-var coherenceView = require('./modules/View/coherenceView');
-var propositionView = require('./modules/View/propositionView');
 
+
+var coherenceView = require('./modules2/client/View/coherenceView');
 var sourceManager = require('./modules2/server/sourceManager');
 var consistencyManager = require('./modules2/server/consistencyManager');
-
-var consistencyGetter = require('./modules2/client/Controler/ConsistencyGetter');
 
 //Monkey patch pour controler les format et params des requetes
 require('./response');
@@ -140,7 +138,6 @@ io.sockets.on('connection', function(client) {
 	client.on("loadOngletListener",function(onglet){
 		switch(onglet){
 			case "coherence" : coherenceView.initialize(client,io.sockets); break;
-			case "proposition" : propositionView.initialize(client,io.sockets); break;
 		}
 	});
 });

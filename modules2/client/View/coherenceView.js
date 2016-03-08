@@ -1,11 +1,18 @@
 /** 
  * @author : Kaenn
  */
+var Q = require('q');
+
 var ConsistencyGetter = require('../Controler/ConsistencyGetter');
 
 function refreshNbCoherence(clients,coherence,outil,target){
 	ConsistencyGetter.getIncoherences(coherence,[],false).then(function(incoherences){
 		clients.emit("refresh-nb-incoherence",coherence,outil,target,incoherences.length);
+	})
+	.catch(function(error){
+		console.log(error);
+		
+		client.emit("refresh-nb-incoherence",coherence,outil,target,"error");
 	});
 }
 
@@ -26,15 +33,15 @@ function getNextIncoherence(client,coherence,outil,target,blacklist){
 			if("id" in theIncoherence && "label" in theIncoherence){
 				nextIncoherence.id=theIncoherence.id;
 				nextIncoherence.label=theIncoherence.label;
-			
+				
 				// On recherche les réponses possible et les suggestions pour ce host
 				var promises=[
-				    ConsistencyGetter.getResponses(coherence,nextIncoherence.id,nextIncoherence.label),
+				    ConsistencyGetter.getResponsesOfElem(coherence,nextIncoherence.id,nextIncoherence.label),
 				    ConsistencyGetter.getSuggestions(coherence,nextIncoherence.id,nextIncoherence.label)
 				];
 				
-				return Q.all(promises,function(retour){
-					if(retour.length > 2){
+				return Q.all(promises).then(function(retour){
+					if(retour.length >= 2){
 						nextIncoherence.responses=retour.shift();
 						nextIncoherence.suggestions=retour.shift();
 					}
@@ -62,9 +69,10 @@ function getAllIncoherence(client,coherence,outil,target){
 	    ConsistencyGetter.getAllResponses(coherence)
 	];
 	
-	//Continuer HERE
+	
 	Q.all(promises,function(retour){
-		//incoherence.
+		ConsistencyGetter.getIncoherences(coherence,[],false),
+		ConsistencyGetter.getAllResponses(coherence)
 	});
 	
 	coherenceManager.getAllIncoherences(coherence).then(function(allIncoherencesWithResponses){

@@ -12,9 +12,9 @@ var ElasticsearchParser = require('../../Elasticsearch/ElasticsearchParser');
 /**
  * Constructeur
  */
-function ConsistencyManager() {}
+function ConsistencyGetter() {}
 
-var methodStatic = ConsistencyManager;
+var methodStatic = ConsistencyGetter;
 
 
 /**
@@ -52,13 +52,15 @@ methodStatic.getIncoherences=function(name,blacklist,justOne){
 }
 
 /**
- * Search responses of one elem
+ * Search all responses classified by elem (all, id or label)
  */
-methodStatic.getResponses=function(name,id,label){
-	var filterOr=[{"term" : { "target.all" : true }}];
+methodStatic.getResponsesByElem=function(name,ids,labels){
+	var filterOr=[
+	    {"term" : { "target.all" : true }}
+	];
 	
-	if(id!=null && id!="") filterOr.push({"term" : { "target.id" : id }});
-	if(label!=null && label!="") filterOr.push({"term" : { "target.label" : label }});
+	if(ids!=null && Array.isArray(ids) && ids.length > 0) filterOr.push({"terms" : { "target.id" : ids }});
+	if(labels!=null && Array.isArray(labels) && labels.length > 0) filterOr.push({"terms" : { "target.label" : labels }});
 	
 	return ElasticsearchClient.search({
 		"index" : "consistency_"+name,
@@ -67,38 +69,85 @@ methodStatic.getResponses=function(name,id,label){
 			"query" : {
 				"or" : filterOr
 			},
-			"sort" : [
-				{ "label" : "asc" }    
-	        ],
-			"fields" :  ["response_id","response_label"]
-		},
-		"size" : 9999
+			"fields" :  ["target.label","target.id","target.all","response_id","response_label"]
+		}
 	}).then(function(body){
-		console.log(ElasticsearchParser.loadFromBodyFields(body));
-	})
+		return ElasticsearchParser.loadFromBodyFields(body);
+	}).then(function(result){
+		var retour={
+			"all" : [],
+			"id" : {},
+			"label" : {}
+		};
+		
+		// Rangement des resultats en fonction de leur target
+		result.forEach(function(row){
+			if("target.all" in row){
+				retour['all'].push({
+					"id" : row['response_id'],
+					"label" : row['response_label']
+				});
+			}
+			
+			if("target.id" in row){
+				var id=row['target.id'];
+				if(! (id in retour['id'])) retour['id'][id]=[];
+				
+				retour['id'][id].push({
+					"id" : row['response_id'],
+					"label" : row['response_label']
+				});
+			}
+			
+			if("target.label" in row){
+				var label=row['target.label'];
+				if(! (label in retour['label'])) retour['label'][label]=[];
+				
+				retour['label'][label].push({
+					"id" : row['response_id'],
+					"label" : row['response_label']
+				});
+			}
+		});
+		
+		return retour;
+	});
 }
 
 /**
- * Search all responses
+ * Search all responses of one elem
  */
-methodStatic.getAllResponses=function(name){
-	return ElasticsearchClient.search({
-		"index" : "consistency_"+name,
-		"type" : "consistency_responses",
-		"body" : {
-			"query" : {
-				"match_all" : {}
-			},
-			"sort" : [
-				{ "label" : "asc" }    
-	        ],
-			"fields" : ["response_id","response_label"]
-		},
-		"size" : 9999
-	}).then(function(body){
-		console.log(ElasticsearchParser.loadFromBodyFields(body));
-	})
+methodStatic.getResponsesOfElem=function(name,id,label){
+	var ids=[];
+	var labels=[];
+	
+	if(id!=null && id!="") ids.push(id);
+	if(label!=null && label!="") labels.push(label);
+	
+	return ConsistencyGetter.getResponsesByElem(name,ids,labels).then(function(responsesByElem){
+		var responsesOfElem=[];
+		
+		// On recupère les reponses commune a tous les elems
+		if("all" in responsesByElem){
+			responsesOfElem=responsesOfElem.concat(responsesByElem.all);
+		}
+		
+		// on recupère les reponses lié a cette id
+		if("id" in responsesByElem && id in responsesByElem.id){
+			responsesOfElem=responsesOfElem.concat(responsesByElem.id[id]);
+		}
+		
+		
+		// On recupère les reponses lié a ce label
+		if("label" in responsesByElem && label in responsesByElem.label){
+			responsesOfElem=responsesOfElem.concat(responsesByElem.label[label]);
+		}
+		
+		return responsesOfElem;
+	});
 }
+
+
 
 /**
  * Search suggestion of one elem
@@ -122,14 +171,23 @@ methodStatic.getSuggestions=function(name,id,label){
 		},
 		"size" : 9999
 	}).then(function(body){
-		console.log(ElasticsearchParser.loadFromBodyFields(body));
+		return ElasticsearchParser.loadFromBodyFields(body);
 	})
+	.catch(console.log);
 }
 
 
 
 
 setTimeout(function(){
+	/*ConsistencyGetter.getResponses("ipplan_ip_manquante",[1],["host3"]).then(function(r){
+		console.log("END",r);
+		
+		for(var hostname in r['label']){
+			console.log("===>",r['label'][hostname]);
+		}
+	}).catch(console.log);*/
+	
 	//getResponses("test1",1,"inco1");
 	//getAllResponses("test1");
 	//getSuggestions("test1",1,"inco1");

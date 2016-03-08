@@ -9,6 +9,7 @@
 	<script type="text/javascript" src="/js/plugin/form/OneInputForm.js"></script>
 	<script type="text/javascript" src="/js/plugin/form/SelectForm.js"></script>
 	<script type="text/javascript" src="/js/plugin/form/RadioForm.js"></script>
+	<script type="text/javascript" src="/js/plugin/form/CheckBoxForm.js"></script>
 	<script type="text/javascript" src="/js/plugin/utile/CoherenceUtile.js"></script>
 	<script type="text/javascript" src="/js/plugin/coherenceContener.js"></script>
 	<script type="text/javascript" src="/js/plugin/coherence.js"></script>
@@ -31,57 +32,16 @@
 			
 			$("#contener").coherenceContener({
 				"content" : {
-			    	"host_without_project" : {
+			    	"ipplan_ip_manquante" : {
 				        "outil" : "default",
 				        "target" : "all",
-				        "label" : "Host sans Projet",
-				        "answer" : "Quel est le projet du host <$label$>?",
-				        "answerMultiple" : "Quel est le projet des hosts?",
-				        "pluginInput" : "OneInputForm" ,
+				        "label" : "IP manquante dans IPPlan",
+				        "answer" : "Valider vous les IP du serveur <$label$>?",
+				        "answerMultiple" : "",
+				        "pluginInput" : "CheckBoxForm" ,
 				        "plugins" : [
-							/*"propositions",*/
-							"resolutionsMultiple"
-						]
-			        },
-			        "host_without_zabbix_mapping" : {
-				        "outil" : "default",
-				        "target" : "all",
-				        "label" : "Host sans mapping Zabbix",
-				        "answer" : "Quel est le mapping Zabbix du host <$label$>?",
-				        "pluginInput" : "OneInputForm",
-				        "plugins" : [
-							"propositions"
-						]
-			        },
-			        "host_without_glpi_mapping" : {
-				        "outil" : "default",
-				        "target" : "all",
-				        "label" : "Host sans mapping GLPI",
-				        "answer" : "Quel est le mapping GLPI du host <$label$>?",
-				        "pluginInput" : "OneInputForm",
-				        "plugins" : [
-							"propositions"
-						]
-			        },
-			        "host_without_type" : {
-				        "outil" : "default",
-				        "target" : "all",
-				        "label" : "Host sans mapping Type",
-				        "answer" : "Quel est le type du host <$label$>?",
-				        "pluginInput" : "RadioForm",
-				        "plugins" : [
-							"propositions",
-							"resolutionsMultiple"
-						]
-			        },
-			        "host_with_multi_glpi_mapping" : {
-				        "outil" : "default",
-				        "target" : "all",
-				        "label" : "[Not Finish]Host avec double mapping GLPI",
-				        "answer" : "Quel est le bon mapping GLPI du host <$label$>? [manque la reponse]",
-				        "pluginInput" : "RadioForm",
-				        "plugins" : [
-							//"propositions"
+							/*"propositions",
+							"resolutionsMultiple"*/
 						]
 			        }
 				},

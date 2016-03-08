@@ -81,20 +81,24 @@ function updateDataToES(index,type,data){
 			});
 		}
 	},function(){/* Empty function in case of new index Exception*/}).then(function(){
-		// On lance le groupement d'action (update+delete)
-		return clientElasticsearch.bulk({
-			body: bodyBulk
-		})
-	}).then(function (body) {
-		var nbUpdate=0;
-		var nbDelete=0;
-		if("items" in body){
-			body['items'].forEach(function(item){
-				if("index" in item) nbUpdate++;
-				if("delete" in item) nbDelete++;
+		if(bodyBulk.length > 0){
+			// On lance le groupement d'action (update+delete)
+			return clientElasticsearch.bulk({
+				body: bodyBulk
+			}).then(function (body) {
+				var nbUpdate=0;
+				var nbDelete=0;
+				if("items" in body){
+					body['items'].forEach(function(item){
+						if("index" in item) nbUpdate++;
+						if("delete" in item) nbDelete++;
+					});
+				}
+				console.log("L'index "+index+" / "+type+" a été mis à jour. (Update : "+nbUpdate+", Delete : "+nbDelete+")");
 			});
+		}else{
+			console.log("L'index "+index+" / "+type+" a été mis à jour. (Update : 0, Delete : 0)");
 		}
-		console.log("L'index "+index+" / "+type+" a été mis à jour. (Update : "+nbUpdate+", Delete : "+nbDelete+")");
 	})
 	.catch(console.log);
 }
