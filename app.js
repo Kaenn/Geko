@@ -12,11 +12,9 @@ var multer = require('multer');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var ldap = require('./modules/ldap');
-var coherenceView = require('./modules/View/coherenceView');
-var propositionView = require('./modules/View/propositionView');
-var sourceManager = require('./modules/API/sourceManager');
-var sourceManager = require('./modules/API/controler/ConsistencyManager');
 
+
+var coherenceView = require('./modules/Client/View/coherenceView');
 
 //Monkey patch pour controler les format et params des requetes
 require('./response');
@@ -58,15 +56,23 @@ server.listen(config.port);
 
 
 /*********************************************************************/
+/*************************** LAUNCHER ********************************/
+/*********************************************************************/
+
+// Lancement de la récuperation périodique des sources
+require('./modules/SourcesLauncher/launcher');
+// Lancement de la récuperation périodique des cohérences
+require('./modules/ConsistenciesLauncher/launcher');
+
+/*********************************************************************/
 /**************************** ROUTER *********************************/
 /*********************************************************************/
 
 var defaultOnglet='coherence';
 
 var renderOnglet=function(req,res,onglet){
-	req.session.username="dev";
 	// On verifie si le user c'est déjà connecté
-	if (req.session.username) {
+	if (req.session.username || config.debug) {
 		res.render("onglet/"+onglet,{server:config.web.url,username:req.session.username,siteName:config.siteName}, function(err, html) {
 			if(!err)
 				res.send(html);
@@ -125,10 +131,6 @@ app.post("/login", function (req, res) {
 	}
 });
 
-
-// Launch source scheduler
-//sourceManager.launchSourcesScheduler();
-
 io.sockets.on('connection', function(client) {
 	console.log('connecter');
 	
@@ -136,7 +138,6 @@ io.sockets.on('connection', function(client) {
 	client.on("loadOngletListener",function(onglet){
 		switch(onglet){
 			case "coherence" : coherenceView.initialize(client,io.sockets); break;
-			case "proposition" : propositionView.initialize(client,io.sockets); break;
 		}
 	});
 });
