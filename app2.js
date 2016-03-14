@@ -14,7 +14,7 @@ var session = require('express-session');
 var ldap = require('./modules/ldap');
 
 
-var coherenceView = require('./modules/client/View/coherenceView');
+var coherenceView = require('./modules/Client/View/coherenceView');
 
 //Monkey patch pour controler les format et params des requetes
 require('./response');
