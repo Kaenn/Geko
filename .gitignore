@@ -17,12 +17,8 @@ modules/SourcesLauncher/sources/*
 !modules/SourcesLauncher/sources/.gitkeep
 
 # Ingore les fichiers de coherence
-coherences/*
-!coherences/.gitkeep
-
-# Ingore les fichiers de consistency
-modules/API/controler/consistency/*
-!modules/API/controler/consistency/.gitkeep
+modules/ConsistenciesLauncher/consistency/*
+!modules/ConsistenciesLauncher/consistency/.gitkeep
 
 # Sauf les fichiers d'envrinnement de prod et preprod
 !config/config.js.tpl
