@@ -1,5 +1,5 @@
-var clientElasticsearch = require("../../Elasticsearch/ElasticsearchClient");
-var ElasticsearchParser = require("../../Elasticsearch/ElasticsearchParser");
+var clientElasticsearch = require("../../../Elasticsearch/ElasticsearchClient");
+var ElasticsearchParser = require("../../../Elasticsearch/ElasticsearchParser");
 
 var getIPManquante=function(fields){
 	// recuperation de toutes les ip dans ipplan

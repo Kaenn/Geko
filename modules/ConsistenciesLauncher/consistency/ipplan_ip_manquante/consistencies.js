@@ -1,5 +1,5 @@
-var ElasticsearchParser = require("../../Elasticsearch/ElasticsearchParser");
-var utility = require("../../utility");
+var ElasticsearchParser = require("../../../Elasticsearch/ElasticsearchParser");
+var utility = require("../../../utility");
 var consistency_utility = require("./consistency_utility");
 
 var getConsistencies=function(){// recuperation de toutes les ip dans ipplan

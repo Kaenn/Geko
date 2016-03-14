@@ -1,4 +1,4 @@
-var ElasticsearchParser = require("../../Elasticsearch/ElasticsearchParser");
+var ElasticsearchParser = require("../../../Elasticsearch/ElasticsearchParser");
 var consistency_utility = require("./consistency_utility");
 
 var getResponses=function(){

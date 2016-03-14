@@ -14,9 +14,7 @@ var session = require('express-session');
 var ldap = require('./modules/ldap');
 
 
-var coherenceView = require('./modules2/client/View/coherenceView');
-var sourceManager = require('./modules2/server/sourceManager');
-var consistencyManager = require('./modules2/server/consistencyManager');
+var coherenceView = require('./modules/client/View/coherenceView');
 
 //Monkey patch pour controler les format et params des requetes
 require('./response');
@@ -58,15 +56,23 @@ server.listen(config.port);
 
 
 /*********************************************************************/
+/*************************** LAUNCHER ********************************/
+/*********************************************************************/
+
+// Lancement de la récuperation périodique des sources
+require('./modules/SourcesLauncher/launcher');
+// Lancement de la récuperation périodique des cohérences
+require('./modules/ConsistenciesLauncher/launcher');
+
+/*********************************************************************/
 /**************************** ROUTER *********************************/
 /*********************************************************************/
 
 var defaultOnglet='coherence';
 
 var renderOnglet=function(req,res,onglet){
-	req.session.username="dev";
 	// On verifie si le user c'est déjà connecté
-	if (req.session.username) {
+	if (req.session.username || config.debug) {
 		res.render("onglet/"+onglet,{server:config.web.url,username:req.session.username,siteName:config.siteName}, function(err, html) {
 			if(!err)
 				res.send(html);
@@ -124,12 +130,6 @@ app.post("/login", function (req, res) {
 		});
 	}
 });
-
-
-// Launch source scheduler
-sourceManager.launchSourcesScheduler();
-
-consistencyManager.launchConsistenciesScheduler();
 
 io.sockets.on('connection', function(client) {
 	console.log('connecter');

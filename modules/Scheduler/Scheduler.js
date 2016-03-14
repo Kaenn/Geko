@@ -2,7 +2,7 @@
  * @author : Kaenn
  */
 var Q = require('q');
-var clientElasticsearch = require('../../Elasticsearch/elasticsearchClient');
+var clientElasticsearch = require('../Elasticsearch/elasticsearchClient');
 
 /**
  * Launch scheduler with update_function

@@ -13,8 +13,8 @@ config/*
 sources/*
 !sources/.gitkeep
 
-modules2/server/sources/*
-!modules2/server/sources/.gitkeep
+modules/SourcesLauncher/sources/*
+!modules/SourcesLauncher/sources/.gitkeep
 
 # Ingore les fichiers de coherence
 coherences/*
