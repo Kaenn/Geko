@@ -9,16 +9,6 @@ node_modules
 # Ignore tous les fichiers d'environnement
 config/*
 
-# Ignore les fichiers de source
-sources/*
-!sources/.gitkeep
-
-modules/SourcesLauncher/sources/*
-!modules/SourcesLauncher/sources/.gitkeep
-
-# Ingore les fichiers de coherence
-modules/ConsistenciesLauncher/consistency/*
-!modules/ConsistenciesLauncher/consistency/.gitkeep
 
 # Sauf les fichiers d'envrinnement de prod et preprod
 !config/config.js.tpl
