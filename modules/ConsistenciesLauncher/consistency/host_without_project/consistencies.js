@@ -32,16 +32,9 @@ var getConsistencies=function(){
 		return utility.addAutoIncrement(result);
 	})
 	.then(function(result){
-		// Suppression des doublons sur le sysName et formattage du retour
-		var sysNameListe=[];
-		
 		var retour=[];
 		result.forEach(function(row){
-			if(sysNameListe.indexOf(row['sysName']) == -1){
-				sysNameListe.push(row['sysName']);
-				
-				retour.push({"id":row['sysName'],"label":row['sysName']});
-			}
+			retour.push({"id":row['id'],"label":row['hostname']});
 		});
 		return retour;
 	})

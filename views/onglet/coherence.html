@@ -32,17 +32,25 @@
 			
 			$("#contener").coherenceContener({
 				"content" : {
+					"host_without_project" : {
+				        "outil" : "default",
+				        "target" : "all",
+				        "label" : "Host sans Projet",
+				        "answer" : "Quel est le projet du host <$label$>?",
+				        "answerMultiple" : "Quel est le projet des hosts?",
+				        "pluginInput" : "OneInputForm" ,
+				        "plugins" : [
+							/*"propositions",
+							"resolutionsMultiple"*/
+						]
+			        },
 			    	"ipplan_ip_manquante" : {
 				        "outil" : "default",
 				        "target" : "all",
 				        "label" : "IP manquante dans IPPlan",
 				        "answer" : "Validez vous les IP du serveur <$label$>?",
 				        "answerMultiple" : "",
-				        "pluginInput" : "CheckBoxForm" ,
-				        "plugins" : [
-							/*"propositions",
-							"resolutionsMultiple"*/
-						]
+				        "pluginInput" : "CheckBoxForm"
 			        }
 				},
 			    "socket" : socket

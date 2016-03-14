@@ -1,8 +1,20 @@
+var clientElasticsearch = require("../../../Elasticsearch/ElasticsearchClient");
 var ElasticsearchParser = require("../../../Elasticsearch/ElasticsearchParser");
-var consistency_utility = require("./consistency_utility");
 
 var getResponses=function(){
-	return consistency_utility.getIPManquante(['sysName','ip_with_mask'])
+	return clientElasticsearch.search({
+		"index":"source",
+		"type":"claratact_project",
+		"body":{
+			"query" : {
+				"match_all": {}
+			},
+			"fields" : ["id","project_name"]
+		},
+		"from":0,
+		"size":999999999,
+		"scroll" : "1m"
+	})
 	.then(function(body){
 		// Récuparation de la recherche en liste
 		return ElasticsearchParser.loadFromBodyFields(body);
@@ -11,11 +23,11 @@ var getResponses=function(){
 		var retour=[];
 		res.forEach(function(row){
 			retour.push({
-				"response_id" : row['ip_with_mask'],
-		    	"response_label" : row['ip_with_mask'],
+				"response_id" : row['id'],
+		    	"response_label" : row['project_name'],
 		    	"target": [
 		    	    {
-		    	    	"label" : row['sysName']
+		    	    	"all" : true
 		    	    }  
 	            ]
 			});
