@@ -93,18 +93,18 @@
 			
 			$.each(incoherences, function(index,incoherence){
 				if("label" in incoherence){
-					if("propositions" in incoherence){
-						var proposition=incoherence.propositions.shift();
+					if("suggestions" in incoherence){
+						var proposition=incoherence.suggestions.shift();
 						
-						if(typeof proposition !== "undefined"){
+						if(typeof proposition !== "undefined" && "id" in proposition && "label" in proposition){
 							// On initialise la liste si elle n'existe pas
 							if(! (proposition.label in incoherencesByProposition) ){
-								incoherencesByProposition[proposition.label]=proposition;
+								incoherencesByProposition[proposition.id]=proposition;
 
-								incoherencesByProposition[proposition.label]["incoherences"]=[];
+								incoherencesByProposition[proposition.id]["incoherences"]=[];
 							}
 							
-							incoherencesByProposition[proposition.label]["incoherences"].push({"label" : incoherence.label, "id" : incoherence.id});	
+							incoherencesByProposition[proposition.id]["incoherences"].push({"label" : incoherence.label, "id" : incoherence.id});	
 						}
 					}else{
 						incoherencesUnknown.push({"label" : incoherence.label, "id" : incoherence.id});

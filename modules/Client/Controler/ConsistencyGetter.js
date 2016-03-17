@@ -8,6 +8,7 @@
 var Q = require('q');
 var ElasticsearchClient = require('../../Elasticsearch/ElasticsearchClient');
 var ElasticsearchParser = require('../../Elasticsearch/ElasticsearchParser');
+var targetDataset = require("./targetDataset");
 
 /**
  * Constructeur
@@ -73,7 +74,7 @@ methodStatic.getResponsesByElem=function(name,ids,labels){
 		}
 	}).then(function(body){
 		return ElasticsearchParser.loadFromBodyFields(body);
-	}).then(sortDataByTarget);
+	}).then(targetDataset.sortDataByTarget);
 }
 
 /**
@@ -102,8 +103,9 @@ methodStatic.getSuggestionsByElem=function(name,ids,labels){
 		"size" : 9999
 	}).then(function(body){
 		return ElasticsearchParser.loadFromBodyFields(body);
-	}).then(sortDataByTarget);
+	}).then(targetDataset.sortDataByTarget);
 }
+
 
 /**
  * Search all responses of one elem
@@ -116,9 +118,21 @@ methodStatic.getResponsesOfElem=function(name,id,label){
 	if(label!=null && label!="") labels.push(label);
 	
 	return ConsistencyGetter.getResponsesByElem(name,ids,labels).then(function(responsesByElem){
-		return getDataOfElem(responsesByElem,name,id,label);
+		var td=new targetDataset(responsesByElem);
+		return td.getDataOfElem(id,label);
 	});
 }
+
+/**
+ * Search responses of multi-elem
+ */
+methodStatic.getResponsesOfMultiElems=function(name,ids,labels){
+	return ConsistencyGetter.getResponsesByElem(name,ids,labels).then(function(responsesByElem){
+		var td=new targetDataset(responsesByElem);
+		return td.getDataOfAll();
+	});
+}
+
 
 /**
  * Search all suggestions of one elem
@@ -131,7 +145,29 @@ methodStatic.getSuggestionsOfElem=function(name,id,label){
 	if(label!=null && label!="") labels.push(label);
 	
 	return ConsistencyGetter.getSuggestionsByElem(name,ids,labels).then(function(suggestionsByElem){
-		return getDataOfElem(suggestionsByElem,name,id,label);
+		var td=new targetDataset(suggestionsByElem);
+		return td.getDataOfElem(id,label);
+	});
+}
+
+
+/**
+ * Search suggestions of multi-elem
+ */
+methodStatic.getSuggestionsOfMultiElems=function(name,elems){
+	var ids=[];
+	var labels=[];
+	
+	elems.forEach(function(elem){
+		if("id" in elem)
+			ids.push(elem.id);
+		if("label" in elem)
+			labels.push(elem.label);
+	});
+	
+	return ConsistencyGetter.getSuggestionsByElem(name,ids,labels).then(function(suggestionsByElem){
+		var td=new targetDataset(suggestionsByElem);
+		return td.getDataOfElems(elems);
 	});
 }
 
@@ -159,50 +195,6 @@ var getDataOfElem=function(dataset,name,id,label){
 	
 	return dataOfElem;
 }
-
-/**
- * Sort dataset by target
- */
-var sortDataByTarget=function(dataset){
-	var retour={
-		"all" : [],
-		"id" : {},
-		"label" : {}
-	};
-	
-	// Rangement des resultats en fonction de leur target
-	dataset.forEach(function(data){
-		if("target.all" in data){
-			retour['all'].push({
-				"id" : data['response_id'],
-				"label" : data['response_label']
-			});
-		}
-		
-		if("target.id" in data){
-			var id=data['target.id'];
-			if(! (id in retour['id'])) retour['id'][id]=[];
-			
-			retour['id'][id].push({
-				"id" : data['response_id'],
-				"label" : data['response_label']
-			});
-		}
-		
-		if("target.label" in data){
-			var label=data['target.label'];
-			if(! (label in retour['label'])) retour['label'][label]=[];
-			
-			retour['label'][label].push({
-				"id" : data['response_id'],
-				"label" : data['response_label']
-			});
-		}
-	});
-	
-	return retour;
-}
-
 
 
 

@@ -62,6 +62,65 @@ function getNextIncoherence(client,coherence,outil,target,blacklist){
 
 
 function getAllIncoherence(client,coherence,outil,target){
+	ConsistencyGetter.getIncoherences(coherence,[],true).then(function(incoherences){
+		var retour=[];
+		
+		if(incoherences.length > 0){
+			var ids=[];
+			var labels=[];
+			var elems=[];
+			incoherences.forEach(function(theIncoherence){
+				if("id" in theIncoherence && theIncoherence.id!=null && theIncoherence.id!="") ids.push(theIncoherence.id);
+				if("label" in theIncoherence && theIncoherence.label!=null && theIncoherence.label!="") labels.push(theIncoherence.label);
+				
+				if("id" in theIncoherence && "label" in theIncoherence && theIncoherence.id!=null && theIncoherence.id!="" && theIncoherence.label!=null && theIncoherence.label!=""){
+					elems.push({
+						"id" : theIncoherence.id,
+						"label" : theIncoherence.label
+					});
+				}
+			});
+			
+			var promises=[
+			    ConsistencyGetter.getResponsesOfMultiElems(coherence,ids,labels),
+			    ConsistencyGetter.getSuggestionsOfMultiElems(coherence,elems)
+			];
+			
+			return Q.all(promises).then(function(result){
+				var allResponses=result.shift();
+				var suggestionsByIds=result.shift();
+				console.log(suggestionsByIds);
+				incoherences.forEach(function(inco){
+					if("id" in inco && inco.id in suggestionsByIds){
+						inco.suggestions=suggestionsByIds[inco.id];
+					}
+				});
+				console.log(incoherences);
+				return {
+					"incoherences" : incoherences,
+					"responses" : allResponses
+				}
+			});
+		}
+	}).then(function(result){
+		if("incoherences" in result && "responses" in result){
+			client.emit("get-all-incoherence-propositions",coherence,outil,target, result.incoherences);
+			//client.emit("get-all-incoherence-resolutions",coherence,outil,target, result.incoherences,result.responses);
+			client.emit("refresh-nb-incoherence",coherence,outil,target, result.incoherences.length);
+		}
+	});
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*
+	ConsistencyGetter.getIncoherences(coherence,[],false)
+	
 	var promises=[
 	    ConsistencyGetter.getIncoherences(coherence,[],false),
 	    ConsistencyGetter.getAllResponses(coherence)
@@ -86,7 +145,7 @@ function getAllIncoherence(client,coherence,outil,target){
 		client.emit("get-all-incoherence-propositions",coherence,outil,target, allIncoherences);
 		client.emit("get-all-incoherence-resolutions",coherence,outil,target, allIncoherences,responses);
 		client.emit("refresh-nb-incoherence",coherence,outil,target, allIncoherences.length);
-	});
+	});*/
 }
 
 
