@@ -89,13 +89,13 @@ function getAllIncoherence(client,coherence,outil,target){
 			return Q.all(promises).then(function(result){
 				var allResponses=result.shift();
 				var suggestionsByIds=result.shift();
-				console.log(suggestionsByIds);
+				
 				incoherences.forEach(function(inco){
 					if("id" in inco && inco.id in suggestionsByIds){
 						inco.suggestions=suggestionsByIds[inco.id];
 					}
 				});
-				console.log(incoherences);
+				
 				return {
 					"incoherences" : incoherences,
 					"responses" : allResponses
