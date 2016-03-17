@@ -23,15 +23,10 @@ var getConsistencies=function(){
 		"from":0,
 		"size":999999999,
 		"scroll" : "1m"
-	})
-	.then(function(body){
+	}).then(function(body){
 		// Récuparation de la recherche en liste
 		return ElasticsearchParser.loadFromBodyFields(body);
-	})
-	.then(function(result){
-		return utility.addAutoIncrement(result);
-	})
-	.then(function(result){
+	}).then(function(result){
 		var retour=[];
 		result.forEach(function(row){
 			retour.push({"id":row['id'],"label":row['hostname']});

@@ -73,45 +73,36 @@ methodStatic.getResponsesByElem=function(name,ids,labels){
 		}
 	}).then(function(body){
 		return ElasticsearchParser.loadFromBodyFields(body);
-	}).then(function(result){
-		var retour={
-			"all" : [],
-			"id" : {},
-			"label" : {}
-		};
-		
-		// Rangement des resultats en fonction de leur target
-		result.forEach(function(row){
-			if("target.all" in row){
-				retour['all'].push({
-					"id" : row['response_id'],
-					"label" : row['response_label']
-				});
-			}
-			
-			if("target.id" in row){
-				var id=row['target.id'];
-				if(! (id in retour['id'])) retour['id'][id]=[];
-				
-				retour['id'][id].push({
-					"id" : row['response_id'],
-					"label" : row['response_label']
-				});
-			}
-			
-			if("target.label" in row){
-				var label=row['target.label'];
-				if(! (label in retour['label'])) retour['label'][label]=[];
-				
-				retour['label'][label].push({
-					"id" : row['response_id'],
-					"label" : row['response_label']
-				});
-			}
-		});
-		
-		return retour;
-	});
+	}).then(sortDataByTarget);
+}
+
+/**
+ * Search suggestion by elem
+ */
+methodStatic.getSuggestionsByElem=function(name,ids,labels){
+	var filterOr=[
+  	    {"term" : { "target.all" : true }}
+  	];
+  	
+  	if(ids!=null && Array.isArray(ids) && ids.length > 0) filterOr.push({"terms" : { "target.id" : ids }});
+  	if(labels!=null && Array.isArray(labels) && labels.length > 0) filterOr.push({"terms" : { "target.label" : labels }});
+	
+	return ElasticsearchClient.search({
+		"index" : "consistency_"+name,
+		"type" : "consistency_suggestions",
+		"body" : {
+			"query" : {
+				"or" : filterOr
+			},
+			"sort" : [
+				{ "label" : "asc" }    
+	        ],
+			"fields" : ["target.label","target.id","target.all","response_id","response_label"]
+		},
+		"size" : 9999
+	}).then(function(body){
+		return ElasticsearchParser.loadFromBodyFields(body);
+	}).then(sortDataByTarget);
 }
 
 /**
@@ -125,55 +116,91 @@ methodStatic.getResponsesOfElem=function(name,id,label){
 	if(label!=null && label!="") labels.push(label);
 	
 	return ConsistencyGetter.getResponsesByElem(name,ids,labels).then(function(responsesByElem){
-		var responsesOfElem=[];
-		
-		// On recupère les reponses commune a tous les elems
-		if("all" in responsesByElem){
-			responsesOfElem=responsesOfElem.concat(responsesByElem.all);
-		}
-		
-		// on recupère les reponses lié a cette id
-		if("id" in responsesByElem && id in responsesByElem.id){
-			responsesOfElem=responsesOfElem.concat(responsesByElem.id[id]);
-		}
-		
-		
-		// On recupère les reponses lié a ce label
-		if("label" in responsesByElem && label in responsesByElem.label){
-			responsesOfElem=responsesOfElem.concat(responsesByElem.label[label]);
-		}
-		
-		return responsesOfElem;
+		return getDataOfElem(responsesByElem,name,id,label);
 	});
 }
 
-
+/**
+ * Search all suggestions of one elem
+ */
+methodStatic.getSuggestionsOfElem=function(name,id,label){
+	var ids=[];
+	var labels=[];
+	
+	if(id!=null && id!="") ids.push(id);
+	if(label!=null && label!="") labels.push(label);
+	
+	return ConsistencyGetter.getSuggestionsByElem(name,ids,labels).then(function(suggestionsByElem){
+		return getDataOfElem(suggestionsByElem,name,id,label);
+	});
+}
 
 /**
- * Search suggestion of one elem
+ * Find in dataset the data of elem
  */
-methodStatic.getSuggestions=function(name,id,label){
-	return ElasticsearchClient.search({
-		"index" : "consistency_"+name,
-		"type" : "consistency_suggestions",
-		"body" : {
-			"query" : {
-				"or" : [
-					{"term" : { "target.label" : label }},
-					{"term" : { "target.id" : id }},
-					{"term" : { "target.all" : true }}
-				]
-			},
-			"sort" : [
-				{ "label" : "asc" }    
-	        ],
-			"fields" : ["response_id","response_label"]
-		},
-		"size" : 9999
-	}).then(function(body){
-		return ElasticsearchParser.loadFromBodyFields(body);
-	})
-	.catch(console.log);
+var getDataOfElem=function(dataset,name,id,label){
+	var dataOfElem=[];
+	
+	// On recupère les reponses commune a tous les elems
+	if("all" in dataset){
+		dataOfElem=dataOfElem.concat(dataset.all);
+	}
+	
+	// on recupère les reponses lié a cette id
+	if("id" in dataset && id in dataset.id){
+		dataOfElem=dataOfElem.concat(dataset.id[id]);
+	}
+	
+	
+	// On recupère les reponses lié a ce label
+	if("label" in dataset && label in dataset.label){
+		dataOfElem=dataOfElem.concat(dataset.label[label]);
+	}
+	
+	return dataOfElem;
+}
+
+/**
+ * Sort dataset by target
+ */
+var sortDataByTarget=function(dataset){
+	var retour={
+		"all" : [],
+		"id" : {},
+		"label" : {}
+	};
+	
+	// Rangement des resultats en fonction de leur target
+	dataset.forEach(function(data){
+		if("target.all" in data){
+			retour['all'].push({
+				"id" : data['response_id'],
+				"label" : data['response_label']
+			});
+		}
+		
+		if("target.id" in data){
+			var id=data['target.id'];
+			if(! (id in retour['id'])) retour['id'][id]=[];
+			
+			retour['id'][id].push({
+				"id" : data['response_id'],
+				"label" : data['response_label']
+			});
+		}
+		
+		if("target.label" in data){
+			var label=data['target.label'];
+			if(! (label in retour['label'])) retour['label'][label]=[];
+			
+			retour['label'][label].push({
+				"id" : data['response_id'],
+				"label" : data['response_label']
+			});
+		}
+	});
+	
+	return retour;
 }
 
 

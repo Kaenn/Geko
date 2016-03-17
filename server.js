@@ -16,7 +16,7 @@ var ldap = require('./modules/ldap');
 
 var coherenceView = require('./modules/Client/View/coherenceView');
 
-//Monkey patch pour controler les format et params des requetes
+// Monkey patch pour controler les format et params des requetes
 require('./response');
 
 app.use(bodyParser.json({limit: '50mb'})); // for parsing application/json
@@ -26,7 +26,7 @@ app.use(multer().single('multiInputFileName')); // for parsing multipart/form-da
 // Permet d'acceder depuis la page aux ressources du repertoire public
 app.use(express.static(__dirname + '/public'));
 
-//Allow parsing cookies from request headers
+// Allow parsing cookies from request headers
 app.use(cookieParser());
 // Session management
 app.sessionStore=new session.MemoryStore({ reapInterval: 60000 * 10 });

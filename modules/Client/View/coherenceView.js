@@ -33,11 +33,10 @@ function getNextIncoherence(client,coherence,outil,target,blacklist){
 			if("id" in theIncoherence && "label" in theIncoherence){
 				nextIncoherence.id=theIncoherence.id;
 				nextIncoherence.label=theIncoherence.label;
-				
 				// On recherche les réponses possible et les suggestions pour ce host
 				var promises=[
 				    ConsistencyGetter.getResponsesOfElem(coherence,nextIncoherence.id,nextIncoherence.label),
-				    ConsistencyGetter.getSuggestions(coherence,nextIncoherence.id,nextIncoherence.label)
+				    ConsistencyGetter.getSuggestionsOfElem(coherence,nextIncoherence.id,nextIncoherence.label)
 				];
 				
 				return Q.all(promises).then(function(retour){
@@ -54,8 +53,7 @@ function getNextIncoherence(client,coherence,outil,target,blacklist){
 		return nextIncoherence;
 	}).then(function(nextIncoherence){
 		client.emit("get-next-incoherence",nextIncoherence.coherence,nextIncoherence.id,nextIncoherence.label,nextIncoherence.responses,nextIncoherence.suggestions);
-	})
-	.catch(function(error){
+	}).catch(function(error){
 		console.log(error);
 		
 		client.emit("get-next-incoherence",coherence,null,null,null,null);
