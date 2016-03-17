@@ -105,47 +105,10 @@ function getAllIncoherence(client,coherence,outil,target){
 	}).then(function(result){
 		if("incoherences" in result && "responses" in result){
 			client.emit("get-all-incoherence-propositions",coherence,outil,target, result.incoherences);
-			//client.emit("get-all-incoherence-resolutions",coherence,outil,target, result.incoherences,result.responses);
+			client.emit("get-all-incoherence-resolutions",coherence,outil,target, result.incoherences,result.responses);
 			client.emit("refresh-nb-incoherence",coherence,outil,target, result.incoherences.length);
 		}
 	});
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/*
-	ConsistencyGetter.getIncoherences(coherence,[],false)
-	
-	var promises=[
-	    ConsistencyGetter.getIncoherences(coherence,[],false),
-	    ConsistencyGetter.getAllResponses(coherence)
-	];
-	
-	
-	Q.all(promises,function(retour){
-		ConsistencyGetter.getIncoherences(coherence,[],false),
-		ConsistencyGetter.getAllResponses(coherence)
-	});
-	
-	coherenceManager.getAllIncoherences(coherence).then(function(allIncoherencesWithResponses){
-		var allIncoherences=[];
-		var responses=[];
-		if("incoherences" in allIncoherencesWithResponses){
-			allIncoherences=allIncoherencesWithResponses["incoherences"];
-			
-			if("responses" in allIncoherencesWithResponses)
-				responses=allIncoherencesWithResponses["responses"];
-		}
-		
-		client.emit("get-all-incoherence-propositions",coherence,outil,target, allIncoherences);
-		client.emit("get-all-incoherence-resolutions",coherence,outil,target, allIncoherences,responses);
-		client.emit("refresh-nb-incoherence",coherence,outil,target, allIncoherences.length);
-	});*/
 }
 
 

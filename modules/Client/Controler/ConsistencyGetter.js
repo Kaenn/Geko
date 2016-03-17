@@ -171,4 +171,32 @@ methodStatic.getSuggestionsOfMultiElems=function(name,elems){
 	});
 }
 
+/*
+method.validateMultipleIncoherence=function(coherence,responses){
+	var promises=[];
+	
+	responses.forEach(function(oneResponse){
+		promises.push(validateIncoherence(coherence,oneResponse.id,oneResponse.responses));
+	});
+	
+	return Q.all(promises);
+}
+
+method.validateIncoherence=function(coherence,id,responses){
+	var coherenceClass=allCoherences[coherence];
+	// launch resolve action
+	coherenceClass.resolve(id,responses);
+	
+	// Add data excpetion for exclude this to the incoherence return
+	return pluginUtility.addDataException(getKeyDataException(coherence,"validate",id),id,coherenceClass.getParams("timerBlacklist"));
+	
+	if(coherenceClass.getParams("responseIsUnique")){
+		responses.forEach(function(response){
+			// Add data excpetion for exclude this to the incoherence return
+			pluginUtility.addDataException(getKeyDataException(coherence,"responses",response),response,coherenceClass.getParams("timerBlacklist"));
+		});
+	}
+}
+*/
+
 module.exports = methodStatic;
