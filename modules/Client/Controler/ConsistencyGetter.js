@@ -9,6 +9,7 @@ var Q = require('q');
 var ElasticsearchClient = require('../../Elasticsearch/ElasticsearchClient');
 var ElasticsearchParser = require('../../Elasticsearch/ElasticsearchParser');
 var targetDataset = require("./targetDataset");
+var redisUtility = require("../../Redis/redisUtility");
 
 /**
  * Constructeur
@@ -29,24 +30,28 @@ methodStatic.getIncoherences=function(name,blacklist,justOne){
 	var size=config.maxIncoherences;
 	if(justOne) size=1;
 	
-	return ElasticsearchClient.search({
-		"index" : "consistency_"+name,
-		"type" : "consistency",
-		"body" : {
-			"query" : {
-				"match_all" : {}
+	return redisUtility.getDataException(redisUtility.getKeyCoherenceException(name,"validate","*")).then(function(exceptions){
+		blacklist=blacklist.concat(exceptions);
+		
+		return ElasticsearchClient.search({
+			"index" : "consistency_"+name,
+			"type" : "consistency",
+			"body" : {
+				"query" : {
+					"match_all" : {}
+				},
+				"filter" : {
+					"not" : {
+						"terms" : { "id" : blacklist }
+					}
+				},
+				"sort" : [
+					{ "label" : "asc" }       
+	            ],
+				"fields" : ["id","label"]
 			},
-			"filter" : {
-				"not" : {
-					"terms" : { "id" : blacklist }
-				}
-			},
-			"sort" : [
-				{ "label" : "asc" }       
-            ],
-			"fields" : ["id","label"]
-		},
-		"size" : size
+			"size" : size
+		});
 	}).then(function(body){
 		return ElasticsearchParser.loadFromBodyFields(body);
 	});
@@ -171,32 +176,35 @@ methodStatic.getSuggestionsOfMultiElems=function(name,elems){
 	});
 }
 
-/*
-method.validateMultipleIncoherence=function(coherence,responses){
+
+methodStatic.validateMultipleIncoherence=function(coherence,responses){
 	var promises=[];
 	
 	responses.forEach(function(oneResponse){
-		promises.push(validateIncoherence(coherence,oneResponse.id,oneResponse.responses));
+		promises.push(methodStatic.validateIncoherence(coherence,oneResponse.id,oneResponse.responses));
 	});
 	
 	return Q.all(promises);
 }
 
-method.validateIncoherence=function(coherence,id,responses){
-	var coherenceClass=allCoherences[coherence];
-	// launch resolve action
-	coherenceClass.resolve(id,responses);
+methodStatic.validateIncoherence=function(coherence,id,responses){
+	var params=require("../../ConsistenciesLauncher/consistency/"+coherence+"/params");
 	
-	// Add data excpetion for exclude this to the incoherence return
-	return pluginUtility.addDataException(getKeyDataException(coherence,"validate",id),id,coherenceClass.getParams("timerBlacklist"));
-	
-	if(coherenceClass.getParams("responseIsUnique")){
-		responses.forEach(function(response){
-			// Add data excpetion for exclude this to the incoherence return
-			pluginUtility.addDataException(getKeyDataException(coherence,"responses",response),response,coherenceClass.getParams("timerBlacklist"));
-		});
+	if("timerBlacklist" in params){
+		// Add data excpetion for exclude this to the incoherence return
+		redisUtility.addDataException(redisUtility.getKeyCoherenceException(coherence,"validate",id),id,params.timerBlacklist);
+		
+		if("responseUnique" in params && params.responseUnique){
+			responses.forEach(function(response){
+				// Add data excpetion for exclude this to the response return
+				redisUtility.addDataException(redisUtility.getKeyCoherenceException(coherence,"responses",response),response,params.timerBlacklist);
+			});
+		}
 	}
+	
+	var resolve=require("../../ConsistenciesLauncher/consistency/"+coherence+"/resolve");
+	
+	return resolve();
 }
-*/
 
 module.exports = methodStatic;

@@ -12,6 +12,11 @@ function getDataException(key){
 			.then(redis.getMultiKey);
 }
 
+function getKeyCoherenceException(coherence,type,id){
+	return "coherence:exception:"+coherence+":"+type+":"+id;
+}
+
 
 exports.addDataException=addDataException;
 exports.getDataException=getDataException;
+exports.getKeyCoherenceException=getKeyCoherenceException;

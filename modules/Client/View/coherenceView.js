@@ -99,29 +99,35 @@ function getAllIncoherence(client,coherence,outil,target){
 				return {
 					"incoherences" : incoherences,
 					"responses" : allResponses
-				}
+				};
 			});
 		}
+		
+		return {
+			"incoherences" : [],
+			"responses" : []
+		}
 	}).then(function(result){
-		if("incoherences" in result && "responses" in result){
+		if(result!=null && "incoherences" in result && "responses" in result){
 			client.emit("get-all-incoherence-propositions",coherence,outil,target, result.incoherences);
 			client.emit("get-all-incoherence-resolutions",coherence,outil,target, result.incoherences,result.responses);
 			client.emit("refresh-nb-incoherence",coherence,outil,target, result.incoherences.length);
 		}
-	});
+	}).catch(console.log);
 }
 
 
 function validateIncoherence(client,coherence,outil,target,id,responses){
-	coherenceManager.validateIncoherence(coherence,id,responses).then(function(allIncoherence){
+	ConsistencyGetter.validateIncoherence(coherence,id,responses).then(function(){
+		console.log("validate");
 		client.emit("validate-incoherence",coherence,outil,target);
 	});
 }
 
 function validateMultipleIncoherence(client,coherence,outil,target,responses){
-	coherenceManager.validateMultipleIncoherence(coherence,responses).then(function(){
+	ConsistencyGetter.validateMultipleIncoherence(coherence,responses).then(function(){
 		getAllIncoherence(client,coherence,outil,target);
-	});
+	}).catch(console.log);
 }
 
 /**
