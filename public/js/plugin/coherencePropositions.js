@@ -93,7 +93,7 @@
 			
 			$.each(incoherences, function(index,incoherence){
 				if("label" in incoherence){
-					if("suggestions" in incoherence){
+					if("suggestions" in incoherence && incoherence.suggestions.length > 0){
 						var proposition=incoherence.suggestions.shift();
 						
 						if(typeof proposition !== "undefined" && "id" in proposition && "label" in proposition){
@@ -111,7 +111,7 @@
 					}
 				}
 			});
-
+			
 			var haveProposition=false;
 			$.each(incoherencesByProposition, function(proposition , propositionDesc){
 				haveProposition=true;

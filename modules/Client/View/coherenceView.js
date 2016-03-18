@@ -5,6 +5,14 @@ var Q = require('q');
 
 var ConsistencyGetter = require('../Controler/ConsistencyGetter');
 
+/**
+ * Rafraichi le nombre d'incoherence
+ * @param clients
+ * @param coherence
+ * @param outil
+ * @param target
+ * @returns
+ */
 function refreshNbCoherence(clients,coherence,outil,target){
 	ConsistencyGetter.getIncoherences(coherence,[],false).then(function(incoherences){
 		clients.emit("refresh-nb-incoherence",coherence,outil,target,incoherences.length);
@@ -16,7 +24,15 @@ function refreshNbCoherence(clients,coherence,outil,target){
 	});
 }
 
-
+/**
+ * Recupère la prochaine incoherence
+ * @param client
+ * @param coherence
+ * @param outil
+ * @param target
+ * @param blacklist
+ * @returns
+ */
 function getNextIncoherence(client,coherence,outil,target,blacklist){
 	ConsistencyGetter.getIncoherences(coherence,blacklist,true).then(function(incoherences){
 		var nextIncoherence={
@@ -60,9 +76,16 @@ function getNextIncoherence(client,coherence,outil,target,blacklist){
 	});
 }
 
-
+/**
+ * Récupère toutes les incoherences
+ * @param client
+ * @param coherence
+ * @param outil
+ * @param target
+ * @returns
+ */
 function getAllIncoherence(client,coherence,outil,target){
-	ConsistencyGetter.getIncoherences(coherence,[],true).then(function(incoherences){
+	ConsistencyGetter.getIncoherences(coherence,[],false).then(function(incoherences){
 		var retour=[];
 		
 		if(incoherences.length > 0){

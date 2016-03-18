@@ -1,6 +1,6 @@
 var params = {
 	"refreshTimer": 3000,
-	"responseUnique": false,
+	"responseUnique": true,
 	"timerBlacklist": 30
 };
 
