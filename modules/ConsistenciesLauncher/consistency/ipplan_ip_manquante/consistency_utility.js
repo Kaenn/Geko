@@ -22,7 +22,7 @@ var getIPManquante=function(fields){
 	})
 	.then(function(ipplan_result){
 		// Recuperation des toutes les IP SNPM qui ne sont aps dans IPPlan
-		return searchSNMPIP=clientElasticsearch.search({
+		return clientElasticsearch.search({
 			"index":"source",
 			"type":"snmp_ip",
 			"body":{

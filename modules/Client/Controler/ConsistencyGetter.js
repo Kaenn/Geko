@@ -38,7 +38,7 @@ methodStatic.getIncoherences=function(name,blacklist,justOne){
 			"type" : "consistency",
 			"body" : {
 				"query" : {
-					"match_all" : {}
+					"term" : { "incoherence" : true }
 				},
 				"filter" : {
 					"not" : {

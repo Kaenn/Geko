@@ -45,3 +45,27 @@ curl -XPUT localhost:9200/_template/template_consistency -d '
   }
 }
 '
+
+
+curl -XPUT localhost:9200/source -d '
+
+{
+  "mappings": {
+    "_default_": {
+      "dynamic_templates": [
+        {
+          "notanalyzed": {
+            "match": "*",
+            "match_mapping_type": "string",
+            "mapping": {
+              "type": "string",
+              "index": "not_analyzed"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+'
+
