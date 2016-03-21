@@ -1,33 +1,33 @@
 var clientElasticsearch = require("../../../Elasticsearch/ElasticsearchClient");
 var ElasticsearchParser = require("../../../Elasticsearch/ElasticsearchParser");
-var Q = require('q');
 
-var getSuggestions=function(){
+var getResponses=function(){
 	return clientElasticsearch.search({
 		"index":"source",
-		"type":"glpi_host",
+		"type":"claratact_host_type",
 		"body":{
 			"query" : {
-				"term": { "haveMapping" : false}
+				"match_all": {}
 			},
-			"fields" : ["id","hostname"]
+			"fields" : ["type","label"]
 		},
 		"from":0,
 		"size":999999999,
 		"scroll" : "1m"
-	}).then(function(body){
+	})
+	.then(function(body){
 		// Récuparation de la recherche en liste
 		return ElasticsearchParser.loadFromBodyFields(body);
-	}).then(function(results){
+	})
+	.then(function(res){
 		var retour=[];
-		
-		results.forEach(function(host){
+		res.forEach(function(row){
 			retour.push({
-				"response_id" : host.id,
-		    	"response_label" : host.hostname,
+				"response_id" : row['type'],
+		    	"response_label" : row['label'],
 		    	"target": [
 		    	    {
-		    	    	"label" : host.hostname
+		    	    	"all" : true
 		    	    }  
 	            ]
 			});
@@ -37,4 +37,5 @@ var getSuggestions=function(){
 	});
 }
 
-module.exports = getSuggestions;
+
+module.exports = getResponses;
